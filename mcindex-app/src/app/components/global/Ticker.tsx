@@ -19,7 +19,6 @@ interface TickerItem {
 export function StockTicker() {
   const [isPaused, setIsPaused] = useState(false)
   const [lastUpdated] = useState<Date>(new Date())
-  const [animationSpeed, setAnimationSpeed] = useState<string>("120s") // Default speed
   const tickerRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
 
@@ -99,7 +98,6 @@ export function StockTicker() {
             className="flex items-center gap-4 whitespace-nowrap animate-continuous-marquee" // New animation class
             style={{
               animationPlayState: isPaused ? 'paused' : 'running',
-              animationDuration: animationSpeed, // Apply dynamic speed
             }} 
           >
             {/* First set of items */}

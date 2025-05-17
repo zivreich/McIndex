@@ -24,7 +24,7 @@ export default function Home() {
 
             <span className="text-yellow-400">▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░</span>
             <br /><br />
-            {'>'} Expected completion: when it's ready
+            {'>'} Expected completion: when it&apos;s ready
           </div>
         </div>
 
