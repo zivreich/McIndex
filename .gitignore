@@ -130,4 +130,7 @@ dist
 .pnp.*
 
 
-./v0
+v0/
+
+# Data folder
+src/data

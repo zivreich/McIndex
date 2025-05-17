@@ -1,0 +1,98 @@
+[
+  {
+    "country": "United States",
+    "code": "US",
+    "currency": "USD",
+    "currentPrice": 5.66,
+    "previousPrice": 5.58,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "Euro area",
+    "code": "EU",
+    "currency": "EUR",
+    "currentPrice": 4.75,
+    "previousPrice": 4.82,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "Japan",
+    "code": "JP",
+    "currency": "JPY",
+    "currentPrice": 390.0,
+    "previousPrice": 387.5,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "United Kingdom",
+    "code": "GB",
+    "currency": "GBP",
+    "currentPrice": 3.39,
+    "previousPrice": 3.43,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "Canada",
+    "code": "CA",
+    "currency": "CAD",
+    "currentPrice": 6.77,
+    "previousPrice": 6.71,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "China",
+    "code": "CN",
+    "currency": "CNY",
+    "currentPrice": 23.9,
+    "previousPrice": 24.1,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "Australia",
+    "code": "AU",
+    "currency": "AUD",
+    "currentPrice": 6.45,
+    "previousPrice": 6.39,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "Brazil",
+    "code": "BR",
+    "currency": "BRL",
+    "currentPrice": 22.9,
+    "previousPrice": 23.1,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "South Africa",
+    "code": "ZA",
+    "currency": "ZAR",
+    "currentPrice": 33.5,
+    "previousPrice": 33.2,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "Russia",
+    "code": "RU",
+    "currency": "RUB",
+    "currentPrice": 135.0,
+    "previousPrice": 136.2,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "India",
+    "code": "IN",
+    "currency": "INR",
+    "currentPrice": 190.0,
+    "previousPrice": 188.5,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  },
+  {
+    "country": "Mexico",
+    "code": "MX",
+    "currency": "MXN",
+    "currentPrice": 60.0,
+    "previousPrice": 59.3,
+    "timestamp": "2025-05-17T14:10:45.000Z"
+  }
+]

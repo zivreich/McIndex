@@ -3,6 +3,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@layer utilities {
+  /* New animation for continuous seamless loop */
+  @keyframes continuous-marquee {
+    0% { transform: translateX(0%); }
+    /* Translates by the width of one set of items */
+    100% { transform: translateX(-50%); } 
+  }
+
+  .animate-continuous-marquee {
+    /* 
+      The duration is set to 2s to match the implied speed of the original animations.
+      A single set of items will scroll past in 2s. 
+      You might want to increase this for a smoother, less hurried ticker effect (e.g., 20s or 30s).
+    */
+    animation: continuous-marquee 25s linear infinite;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
