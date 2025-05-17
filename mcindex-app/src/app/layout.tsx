@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Mono } from "next/font/google"
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { StockTicker } from "@/components/global/Ticker";
+import Header from "@/components/global/Header";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Use Space Mono as our monospace font
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  display: "swap",
+  variable: "--font-space-mono",
+})
 
 export const metadata: Metadata = {
   title: "McIndex",
@@ -27,11 +26,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={spaceMono.className}
       >
         <ThemeProvider attribute="class">
           <StockTicker />
-          {children}
+          <div className="max-w-6xl mx-auto p-6">
+            <Header />
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>
