@@ -131,6 +131,7 @@ dist
 
 
 v0/
+.windsurf/
 
 # Data folder
 src/data

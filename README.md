@@ -65,8 +65,8 @@ This project is licensed under the MIT License – see the [LICENSE](LICENSE) fi
 ## 👋 Connect With Us
 
 * Website: [themcindex.com](https://themcindex.com)
-* Twitter: [@McIndexApp](https://twitter.com/McIndexApp)
+* Twitter: [@ziv_reich](https://twitter.com/ziv_reich)
 
 ---
 
-© 2025 McIndex by @ziv_reich
+© 2025 McIndex by [@ziv_reich](https://twitter.com/ziv_reich)
