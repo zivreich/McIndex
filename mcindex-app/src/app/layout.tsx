@@ -30,7 +30,7 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class">
           <StockTicker />
-          <div className="max-w-6xl mx-auto p-6">
+          <div className="max-w-6xl mx-auto p-4 md:p-8">
             <Header />
             {children}
           </div>

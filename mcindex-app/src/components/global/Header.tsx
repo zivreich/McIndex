@@ -3,15 +3,14 @@ import Link from "next/link"
 import { Globe } from "lucide-react"
 import { ThemeToggle } from "@/components/global/header/theme-toggle"
 import { CurrencySelector } from "@/components/global/header/currency-selector"
+import ComparisonSelector from "@/components/global/header/comparison-selector"
 
 export default function Header() {
     return (
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">McIndex</h1>
-          <p className="text-muted-foreground">
-            Comparing the price of a <u className="cursor-pointer font-semibold">Big Mac</u> across different countries (in USD)
-          </p>
+          <ComparisonSelector />
         </div>
         <div className="flex items-center gap-2">
           <Link href="/countries">
