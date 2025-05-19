@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { StockTicker } from "@/components/global/Ticker";
 import Header from "@/components/global/Header";
+import { QueryProvider } from "./QueryProvider";
 
 // Use Space Mono as our monospace font
 const spaceMono = Space_Mono({
@@ -29,11 +30,13 @@ export default function RootLayout({
         className={spaceMono.className}
       >
         <ThemeProvider attribute="class">
-          <StockTicker />
-          <div className="max-w-6xl mx-auto p-4 md:p-8">
-            <Header />
-            {children}
-          </div>
+          <QueryProvider>
+            <StockTicker />
+            <div className="max-w-6xl mx-auto p-4 md:p-8">
+              <Header />
+              {children}
+            </div>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,157 +1,207 @@
 "use client";
 
-import Link from "next/link";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import React from 'react';
+import { useQuery } from '@tanstack/react-query'; 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; 
+import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from 'lucide-react';
 
-// Placeholder types - these would typically be imported or defined in a shared types file
+// Import the type for fetched data from the API route
+import type { FetchedCountryProductInfo } from '@/app/api/countries/route'; 
+
+// Types from McIndexTable (or define locally if not exported globally)
 interface Currency {
   code: string;
   symbol: string;
 }
 
-interface CountryData {
-  code: string;
-  country: string;
-  price: number;
-  priceInSelectedCurrency: number;
-  previousPrice: number;
-  previousPriceInSelectedCurrency: number;
-  currency: string; // local currency code
-}
+// Helper to format price based on local currency data
+const formatLocalPrice = (price: number | null | undefined, currencyMeta: FetchedCountryProductInfo['currencyMeta']): string => {
+  if (price === null || typeof price === 'undefined') return "N/A";
+  return `${currencyMeta.symbol}${price.toFixed(currencyMeta.decimals ? 2 : 0)}`;
+};
 
-// Placeholder utility functions - these would typically be in a utils file
-const formatPrice = (price: number, currencySymbol: string = '$') => `${currencySymbol}${price.toFixed(2)}`;
-const formatLocalPrice = (price: number, localCurrencySymbol: string = '') => `${localCurrencySymbol}${price.toFixed(2)}`;
-
-// Placeholder components - these would be actual components
+// Re-define PriceTrendCell locally
 const PriceTrendCell = (
-  { currentPrice, previousPrice, timePeriod, currencySymbol }: 
-  { currentPrice: number; previousPrice: number; timePeriod: string; currencySymbol: string }
+  { currentPrice, previousPrice, currencySymbol }:
+  { currentPrice: number | null; previousPrice: number | null; currencySymbol: string }
 ) => {
+  if (currentPrice === null || previousPrice === null) {
+    return <MinusIcon className="h-4 w-4 text-muted-foreground" />;
+  }
   const trend = currentPrice - previousPrice;
+  // Avoid division by zero if previousPrice is 0
+  const percentageChange = previousPrice !== 0 ? ((trend / previousPrice) * 100) : (trend !== 0 ? Infinity : 0);
+
+  let IconComponent = MinusIcon; // Default to MinusIcon
+  let textColor = "text-muted-foreground";
+
+  if (trend > 0) {
+    IconComponent = ArrowUpIcon;
+    textColor = "text-green-600";
+  } else if (trend < 0) {
+    IconComponent = ArrowDownIcon;
+    textColor = "text-red-600";
+  }
+  // If trend is 0, IconComponent remains MinusIcon and textColor remains text-muted-foreground
+
   return (
-    <div className={`flex items-center ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-      {trend >= 0 ? '▲' : '▼'} {formatPrice(Math.abs(trend), currencySymbol)} ({((trend / previousPrice) * 100).toFixed(1)}%)
-      <span className="text-xs text-muted-foreground ml-1">vs {timePeriod}</span>
+    <div className={`flex items-center gap-1 ${textColor}`}>
+      <IconComponent className="h-4 w-4" />
+      <span>
+        {currencySymbol}{Math.abs(trend).toFixed(2)} ({percentageChange === Infinity || percentageChange === -Infinity ? 'N/A' : percentageChange.toFixed(1)}%)
+      </span>
     </div>
   );
 };
 
+// Re-define InlineChartCell locally
 const InlineChartCell = (
-  { data, currentItem, timePeriod, currencyCode, currencySymbol }: 
-  { data: CountryData[]; currentItem: CountryData; timePeriod: string; currencyCode: string; currencySymbol: string }
+  { countryProductInfo, timePeriodLabel, currencySymbol }:
+  {
+    countryProductInfo: FetchedCountryProductInfo;
+    timePeriodLabel: string;
+    currencySymbol: string;
+  }
 ) => {
-  // Simple visual placeholder for an inline chart
   return (
     <div className="w-full h-10 bg-gray-200 rounded-sm flex items-center justify-center text-xs text-gray-500">
-      [Inline Chart for {currentItem.country} - {currencySymbol}]
+      [Chart: {countryProductInfo.countryName} {currencySymbol} vs {timePeriodLabel}]
     </div>
   );
 };
 
 interface TableViewProps {
-  sortedData: CountryData[];
-  timePeriodLabels: { [key: string]: string };
-  selectedTimePeriod: string;
-  currency: Currency;
+  timePeriodLabels: Record<number, string>;
+  selectedTimePeriod: number; 
+  currency: Currency; 
+  onCountrySelect: (countryCode: string) => void; 
 }
 
-export function TableView({ sortedData, timePeriodLabels, selectedTimePeriod, currency }: TableViewProps) {
-  if (!sortedData || sortedData.length === 0) {
-    return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[20%]">Country</TableHead>
-            <TableHead className="w-[25%]">Current Price</TableHead>
-            <TableHead className="whitespace-nowrap">
-              Trend ({timePeriodLabels[selectedTimePeriod] || selectedTimePeriod})
-            </TableHead>
-            <TableHead className="w-[40%]">Price Comparison</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell colSpan={4} className="text-center py-8">
-              No countries found or data is loading...
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    );
+// Define the fetching function
+const fetchCountryProductData = async (year: number): Promise<FetchedCountryProductInfo[]> => {
+  const response = await fetch(`/api/countries?year=${year}`);
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to fetch country product data');
   }
+  return response.json();
+};
+
+export function TableView({
+  timePeriodLabels,
+  selectedTimePeriod,
+  currency, 
+  onCountrySelect,
+}: TableViewProps) {
+  const currentPeriodLabel = timePeriodLabels[selectedTimePeriod] || String(selectedTimePeriod);
+
+  const { data: countryProductData, isLoading, isError, error } = useQuery<FetchedCountryProductInfo[], Error>(
+    {
+      queryKey: ['countryProductData', selectedTimePeriod],
+      queryFn: () => fetchCountryProductData(selectedTimePeriod),
+    }
+  );
+
+  if (isLoading) {
+    return <div className="text-center p-10">Loading McData for {currentPeriodLabel}...</div>;
+  }
+
+  if (isError) {
+    return <div className="text-center p-10 text-red-600">Error loading data: {error?.message || 'Unknown error'}</div>;
+  }
+
+  if (!countryProductData || countryProductData.length === 0) {
+    return <div className="text-center p-10">No data available for {currentPeriodLabel}.</div>;
+  }
+  
+  const sortedDisplayData = [...countryProductData].sort((a, b) =>
+    a.countryName.localeCompare(b.countryName)
+  );
 
   return (
     <TooltipProvider>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[20%]">Country</TableHead>
-            <TableHead className="w-[25%]">Current Price</TableHead>
-            <TableHead className="whitespace-nowrap">
-              Trend ({timePeriodLabels[selectedTimePeriod]})
-            </TableHead>
-            <TableHead className="w-[40%]">Price Comparison</TableHead>
+            <TableHead className="w-[200px]">Country</TableHead>
+            <TableHead>Big Mac Price ({currentPeriodLabel})</TableHead>
+            <TableHead>Price Trend</TableHead>
+            {/* <TableHead>PPP Index</TableHead> */} 
+            {/* <TableHead>GDP per Capita</TableHead> */} 
+            <TableHead className="text-right min-w-[200px]">Local Price Chart</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedData.map((item, index) => (
-            <TableRow key={index}>
-              <TableCell className="font-medium">
-                <Link
-                  href={`/countries/${item.code.toLowerCase()}`}
-                  className="hover:underline hover:text-primary transition-colors"
-                >
-                  {item.country}
-                </Link>
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-col">
-                  <div className="font-medium">{formatPrice(item.priceInSelectedCurrency, currency.symbol)}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {formatLocalPrice(item.price, item.currency)} {/* Assuming item.currency is the symbol here for simplicity */}
+          {sortedDisplayData.map((item) => {
+            const currentPrice = item.pricesForProduct.currentLocalPrice;
+            const previousPrice = item.pricesForProduct.previousLocalPrice;
+            let trendPercentage: number | null = null;
+            if (currentPrice !== null && previousPrice !== null && previousPrice !== 0) {
+              trendPercentage = ((currentPrice - previousPrice) / previousPrice) * 100;
+            }
+
+            return (
+              <TableRow key={item.id} onClick={() => onCountrySelect(item.countryCode)} className="cursor-pointer hover:bg-muted/50">
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback>{item.flag || item.countryCode}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{item.countryName}</span>
                   </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <PriceTrendCell
-                        currentPrice={item.priceInSelectedCurrency}
-                        previousPrice={item.previousPriceInSelectedCurrency}
-                        timePeriod={selectedTimePeriod}
-                        currencySymbol={currency.symbol}
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <div className="text-xs">
-                      <div className="font-bold mb-1">Price Change in Local Currency:</div>
-                      <div>Current: {formatLocalPrice(item.price, item.currency)}</div>
-                      <div>
-                        {timePeriodLabels[selectedTimePeriod]}:{" "}
-                        {formatLocalPrice(item.previousPrice, item.currency)}
+                </TableCell>
+                <TableCell>
+                  {formatLocalPrice(currentPrice, item.currencyMeta)}
+                </TableCell>
+                <TableCell>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div> 
+                        <PriceTrendCell
+                          currentPrice={currentPrice}
+                          previousPrice={previousPrice}
+                          currencySymbol={item.currencyMeta.symbol} 
+                        />
                       </div>
-                      <div className="mt-1">
-                        Change: {(((item.price - item.previousPrice) / item.previousPrice) * 100).toFixed(1)}%
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-background border text-foreground">
+                      <div className="text-sm">
+                        <div>Current ({currentPeriodLabel}): {formatLocalPrice(currentPrice, item.currencyMeta)}</div>
+                        {item.pricesForProduct.previousAvailableYear && (
+                          <div>
+                            Previous ({item.pricesForProduct.previousAvailableYear}): 
+                            {formatLocalPrice(previousPrice, item.currencyMeta)}
+                          </div>
+                        )}
+                        {trendPercentage !== null && (
+                           <div className="mt-1">
+                            Change: {trendPercentage === Infinity || trendPercentage === -Infinity ? 'N/A' : trendPercentage.toFixed(1)}%
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TableCell>
-              <TableCell className="min-w-[200px]">
-                <InlineChartCell
-                  data={sortedData}
-                  currentItem={item}
-                  timePeriod={selectedTimePeriod}
-                  currencyCode={currency.code}
-                  currencySymbol={currency.symbol}
-                />
-              </TableCell>
-            </TableRow>
-          ))}
+                    </TooltipContent>
+                  </Tooltip>
+                </TableCell>
+                <TableCell className="min-w-[200px]">
+                  <InlineChartCell
+                    countryProductInfo={item} 
+                    timePeriodLabel={currentPeriodLabel}
+                    currencySymbol={item.currencyMeta.symbol} 
+                  />
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TooltipProvider>

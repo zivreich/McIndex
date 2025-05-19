@@ -1,11 +1,31 @@
 import Filters from "@/components/home/McIndexTable/Filters";
 import McIndexContent from "@/components/home/McIndexTable/McIndexContent";
+import { useState } from "react";
+
+// Format time period labels for display
+export const timePeriodLabels: Record<number, string> = {
+    2025: "2025",
+    2024: "2024",
+    2023: "2023",
+    2022: "2022",
+    2021: "2021",
+};
 
 export default function McIndexTable() {
+    // State lifted from Filters.tsx
+    const [selectedTimePeriod, setSelectedTimePeriod] = useState<number>(2025);
+
     return (
         <div>
-            <Filters />
-            <McIndexContent />    
+            <Filters
+                timePeriodLabels={timePeriodLabels}
+                selectedTimePeriod={selectedTimePeriod}
+                onTimePeriodChange={setSelectedTimePeriod}
+            />
+            <McIndexContent
+                timePeriodLabels={timePeriodLabels}
+                selectedTimePeriod={selectedTimePeriod}
+            />    
         </div>
     )
 }

@@ -7,6 +7,7 @@ import { TableView } from "./TableView";
 import { MapView } from "./MapView";
 import { PppAnalysisView } from "./PppAnalysisView";
 
+// Existing type definitions
 interface Currency {
   code: string;
   symbol: string;
@@ -19,7 +20,7 @@ interface CountryData {
   priceInSelectedCurrency: number;
   previousPrice: number;
   previousPriceInSelectedCurrency: number;
-  currency: string; 
+  currency: string;
 }
 
 interface BigMacHistoricalDataItem {
@@ -28,16 +29,6 @@ interface BigMacHistoricalDataItem {
   currency: string;
   code: string;
 }
-
-const dummyTimePeriodLabels: { [key: string]: string } = {
-  "1M": "1 Month",
-  "6M": "6 Months",
-  "1Y": "1 Year",
-  "5Y": "5 Years",
-  ALL: "All Time",
-};
-
-const dummySelectedTimePeriod = "1Y";
 
 const dummyCurrency: Currency = {
   code: "USD",
@@ -83,15 +74,26 @@ const dummyBigMacHistoricalData: BigMacHistoricalDataItem[] = dummySortedData.ma
 
 const dummyCurrentPriceData: CountryData[] = [...dummySortedData]; 
 
-export default function McIndexContent() {
+// Define props interface for McIndexContent
+interface McIndexContentProps {
+  timePeriodLabels: Record<number, string>;
+  selectedTimePeriod: number;
+}
+
+export default function McIndexContent({
+  timePeriodLabels,
+  selectedTimePeriod,
+}: McIndexContentProps) {
   const [activeTab, setActiveTab] = useState("table");
 
-  const timePeriodLabels = dummyTimePeriodLabels;
-  const selectedTimePeriod = dummySelectedTimePeriod;
-  const currency = dummyCurrency;
-  const sortedData = dummySortedData;
   const bigMacHistoricalData = dummyBigMacHistoricalData;
   const currentPriceData = dummyCurrentPriceData;
+  const currency = dummyCurrency;
+
+  const handleCountrySelect = (countryCode: string) => {
+    console.log("Country selected in McIndexContent:", countryCode);
+    // Future: Set state, navigate, or open a modal, etc.
+  };
 
   return (
     <Tabs defaultValue="table" value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -109,10 +111,10 @@ export default function McIndexContent() {
 
       <TabsContent value="table" className="border rounded-md overflow-hidden">
         <TableView 
-          sortedData={sortedData} 
           timePeriodLabels={timePeriodLabels} 
           selectedTimePeriod={selectedTimePeriod} 
           currency={currency} 
+          onCountrySelect={handleCountrySelect} 
         />
       </TabsContent>
 

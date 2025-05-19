@@ -1,28 +1,29 @@
 "use client"
 
-import { Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { Calendar } from "lucide-react"
-import { ArrowUpDown } from "lucide-react"
-import { useState } from "react"
+import { Search, Calendar, ArrowUpDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
-// Define time period types for type safety
-type TimePeriod = "3m" | "6m" | "1y" | "2y";
-
-// Format time period labels for display
-const timePeriodLabels: Record<TimePeriod, string> = {
-    "3m": "3 months ago",
-    "6m": "6 months ago",
-    "1y": "1 year ago",
-    "2y": "2 years ago",
+interface FiltersProps {
+  timePeriodLabels: Record<number, string>;
+  selectedTimePeriod: number;
+  onTimePeriodChange: (period: number) => void;
 }
 
-export default function Filters() {
-    const [searchTerm, setSearchTerm] = useState("")
-    const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>("3m")
+export default function Filters({
+  timePeriodLabels,
+  selectedTimePeriod,
+  onTimePeriodChange,
+}: FiltersProps) {
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div>
@@ -50,30 +51,20 @@ export default function Filters() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setSelectedTimePeriod("3m")}>
-              3 months ago
-              {selectedTimePeriod === "3m" && (
-                <Badge className="ml-2 bg-primary">Selected</Badge>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSelectedTimePeriod("6m")}>
-              6 months ago
-              {selectedTimePeriod === "6m" && (
-                <Badge className="ml-2 bg-primary">Selected</Badge>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSelectedTimePeriod("1y")}>
-              1 year ago
-              {selectedTimePeriod === "1y" && (
-                <Badge className="ml-2 bg-primary">Selected</Badge>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSelectedTimePeriod("2y")}>
-              2 years ago
-              {selectedTimePeriod === "2y" && (
-                <Badge className="ml-2 bg-primary">Selected</Badge>
-              )}
-            </DropdownMenuItem>
+            {Object.keys(timePeriodLabels).map((yearString) => {
+              const year = parseInt(yearString, 10);
+              return (
+                <DropdownMenuItem
+                  key={year}
+                  onClick={() => onTimePeriodChange(year)}
+                >
+                  {timePeriodLabels[year]}
+                  {selectedTimePeriod === year && (
+                    <Badge className="ml-2 bg-primary">Selected</Badge>
+                  )}
+                </DropdownMenuItem>
+              );
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
 

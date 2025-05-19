@@ -15,7 +15,6 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 
-// Define Big Mac options
 type ProductOption = {
   id: string;
   name: string;

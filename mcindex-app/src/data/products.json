@@ -35,15 +35,15 @@
     "emoji": "🍞"
   },
   "milk": {
-    "name": "Liter of Milk",
+    "name": "Milk Jug",
     "description": "1L whole or low-fat milk",
     "category": "grocery",
-    "unit": "liter",
+    "unit": "jug",
     "emoji": "🥛"
   },
   "coca-cola": {
-    "name": "Coca-Cola (500ml)",
-    "description": "500ml bottled Coke",
+    "name": "Coca-Cola Bottle",
+    "description": "500ml glass bottle of Coca-Cola",
     "category": "beverage",
     "unit": "bottle",
     "emoji": "🥤"
