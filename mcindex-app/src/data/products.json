@@ -1,0 +1,51 @@
+{
+  "big-mac": {
+    "name": "Big Mac",
+    "description": "Classic McDonald's burger",
+    "category": "fast-food",
+    "unit": "item",
+    "emoji": "🍔"
+  },
+  "coffee-cup": {
+    "name": "Coffee Cup",
+    "description": "Regular brewed coffee",
+    "category": "fast-food",
+    "unit": "cup",
+    "emoji": "☕"
+  },
+  "nuggets-10pcs": {
+    "name": "10 Piece McNuggets",
+    "description": "10 chicken nuggets",
+    "category": "fast-food",
+    "unit": "box",
+    "emoji": "🍗"
+  },
+  "beer": {
+    "name": "Beer",
+    "description": "Standard beer (where available)",
+    "category": "beverage",
+    "unit": "bottle",
+    "emoji": "🍺"
+  },
+  "bread": {
+    "name": "Loaf of Bread",
+    "description": "Basic white or wheat loaf",
+    "category": "grocery",
+    "unit": "loaf",
+    "emoji": "🍞"
+  },
+  "milk": {
+    "name": "Liter of Milk",
+    "description": "1L whole or low-fat milk",
+    "category": "grocery",
+    "unit": "liter",
+    "emoji": "🥛"
+  },
+  "coca-cola": {
+    "name": "Coca-Cola (500ml)",
+    "description": "500ml bottled Coke",
+    "category": "beverage",
+    "unit": "bottle",
+    "emoji": "🥤"
+  }
+}

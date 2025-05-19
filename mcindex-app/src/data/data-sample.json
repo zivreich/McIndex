@@ -1,0 +1,188 @@
+{
+  "us": {
+    "country": "United States",
+    "code": "US",
+    "currency": {
+      "code": "USD",
+      "decimals": true,
+      "symbol": "$"
+    },
+    "prices": {
+      "big-mac": {
+        "2025": 5.49,
+        "2020": 5.59,
+        "2015": 5.79
+      },
+      "coffee-cup": {
+        "2025": 1.89,
+        "2020": 1.99,
+        "2015": 2.99
+      },
+      "nuggets-10pcs": {
+        "2025": 4.49,
+        "2020": 4.99,
+        "2015": 5.99
+      }
+    },
+    "economy": {
+      "gdp": {
+        "2025": 28000000000000,
+        "2020": 27000000000000,
+        "2015": 26000000000000
+      },
+      "gdpPerCapita": {
+        "2025": 83000,
+        "2020": 83000,
+        "2015": 83000
+      },
+      "monthlyMinimumWage": {
+        "2025": 1256,
+        "2020": 1256,
+        "2015": 1256
+      },
+      "hourlyMinimumWage": {
+        "2025": 7.25,
+        "2020": 7.25,
+        "2015": 7.25
+      }
+    },
+    "meta": {
+      "flag": "🇺🇸",
+      "continent": "North America",
+      "capital": "Washington, D.C.",
+      "population": 331000000,
+      "areaKm2": 9833520,
+      "majorCities": [
+        "New York",
+        "Los Angeles",
+        "Chicago",
+        "Houston",
+        "Phoenix"
+      ],
+      "languages": ["English"],
+      "timeZone": "America/New_York",
+      "drivingSide": "right",
+      "about": "The United States is a federal republic located in North America, known for its economic power, global influence, and cultural exports. It has a highly developed, diverse economy and is home to many of the world’s largest tech, finance, and entertainment companies. With 50 states and a population of over 330 million, the U.S. spans multiple time zones and features a wide range of climates and lifestyles. Its capital is Washington, D.C., and the U.S. dollar (USD) serves as a global reserve currency."
+    }
+  },
+  "de": {
+    "country": "Germany",
+    "code": "DE",
+    "currency": {
+      "code": "EUR",
+      "decimals": true,
+      "symbol": "€"
+    },
+    "prices": {
+      "big-mac": {
+        "2025": 4.79,
+        "2020": 4.49,
+        "2015": 3.99
+      },
+      "coffee-cup": {
+        "2025": 2.19,
+        "2020": 1.99,
+        "2015": 1.79
+      },
+      "nuggets-10pcs": {
+        "2025": 4.99,
+        "2020": 4.49,
+        "2015": 3.99
+      }
+    },
+    "economy": {
+      "gdp": {
+        "2025": 4300000000000,
+        "2020": 3846000000000,
+        "2015": 3375000000000
+      },
+      "gdpPerCapita": {
+        "2025": 51000,
+        "2020": 46000,
+        "2015": 42000
+      },
+      "monthlyMinimumWage": {
+        "2025": 1980,
+        "2020": 1584,
+        "2015": 1473
+      },
+      "hourlyMinimumWage": {
+        "2025": 12.41,
+        "2020": 9.35,
+        "2015": 8.5
+      }
+    },
+    "meta": {
+      "flag": "🇩🇪",
+      "continent": "Europe",
+      "capital": "Berlin",
+      "population": 83000000,
+      "areaKm2": 357022,
+      "majorCities": ["Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt"],
+      "languages": ["German"],
+      "timeZone": "Europe/Berlin",
+      "drivingSide": "right",
+      "about": "Germany is a highly developed country in central Europe known for its strong industrial base, social market economy, and significant role in the European Union. It is Europe’s largest economy and a global leader in engineering, automotive production, and export-oriented trade. With a rich cultural history and diverse urban centers like Berlin and Munich, Germany also boasts robust infrastructure, high living standards, and a well-established welfare system."
+    }
+  },
+  "jp": {
+    "country": "Japan",
+    "code": "JP",
+    "currency": {
+      "code": "JPY",
+      "decimals": false,
+      "symbol": "¥"
+    },
+    "prices": {
+      "big-mac": {
+        "2025": 420,
+        "2020": 390,
+        "2015": 370
+      },
+      "coffee-cup": {
+        "2025": 150,
+        "2020": 140,
+        "2015": 130
+      },
+      "nuggets-10pcs": {
+        "2025": 390,
+        "2020": 370,
+        "2015": 360
+      }
+    },
+    "economy": {
+      "gdp": {
+        "2025": 4300000000000,
+        "2020": 5065000000000,
+        "2015": 4388000000000
+      },
+      "gdpPerCapita": {
+        "2025": 34500,
+        "2020": 40000,
+        "2015": 34500
+      },
+      "monthlyMinimumWage": {
+        "2025": 176000,
+        "2020": 152000,
+        "2015": 135000
+      },
+      "hourlyMinimumWage": {
+        "2025": 961,
+        "2020": 902,
+        "2015": 798
+      }
+    },
+    "meta": {
+      "flag": "🇯🇵",
+      "continent": "Asia",
+      "capital": "Tokyo",
+      "population": 125000000,
+      "areaKm2": 377975,
+      "majorCities": ["Tokyo", "Osaka", "Nagoya", "Yokohama", "Fukuoka"],
+      "languages": ["Japanese"],
+      "timeZone": "Asia/Tokyo",
+      "drivingSide": "left",
+      "about": "Japan is an island nation in East Asia known for its advanced technology, strong economy, and unique blend of traditional culture and modern innovation. As one of the world’s largest economies, Japan is a global leader in automotive manufacturing, electronics, robotics, and precision engineering. It has a high standard of living, excellent public infrastructure, and a distinct cultural heritage centered around respect, efficiency, and design. Tokyo, its capital, is one of the most populous and influential cities in the world."
+    }
+  }
+}
