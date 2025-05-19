@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { StockTicker } from "@/components/global/Ticker";
 import Header from "@/components/global/Header";
 import { QueryProvider } from "./QueryProvider";
+import { Analytics } from "@vercel/analytics/next"
 
 // Use Space Mono as our monospace font
 const spaceMono = Space_Mono({
@@ -38,6 +39,7 @@ export default function RootLayout({
             </div>
           </QueryProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
