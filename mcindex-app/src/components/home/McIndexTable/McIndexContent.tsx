@@ -9,11 +9,6 @@ import { PppAnalysisView } from "./PppAnalysisView";
 import { useCurrency } from "@/contexts/CurrencyContext"; 
 
 // Existing type definitions (can be kept for dummy data or other views)
-interface Currency { 
-  code: string;
-  symbol: string;
-}
-
 interface CountryData {
   code: string;
   country: string;

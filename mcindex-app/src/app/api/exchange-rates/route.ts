@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     // Check if file exists
     try {
       await fs.access(filePath);
-    } catch (e) {
+    } catch (_e) {
       // console.error(`File not found at path: ${filePath}`);
       return NextResponse.json(
         { error: `Exchange rate data for year ${year} not found.` },
@@ -60,15 +60,12 @@ export async function GET(request: NextRequest) {
         { status: 404 }
       );
     }
-  } catch (error) {
+  } catch (_error) {
     // console.error('Error fetching exchange rate:');
     let errorMessage = 'Failed to fetch exchange rate.';
-    if (error instanceof Error) {
-        errorMessage = error.message;
-    }
-    return NextResponse.json(
-        { error: errorMessage }, 
-        { status: 500 }
-    );
+    // if (_error instanceof Error) {
+    //     errorMessage = _error.message;
+    // }
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
