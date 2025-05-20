@@ -19,7 +19,7 @@ interface TickerItem {
 export function StockTicker() {
   const [isPaused, setIsPaused] = useState(false)
   const [lastUpdated] = useState<Date>(new Date())
-  const [animationSpeed, setAnimationSpeed] = useState<string>("120s") // Default speed
+  const [animationSpeed] = useState<string>("120s") // Default speed
   const tickerRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
 

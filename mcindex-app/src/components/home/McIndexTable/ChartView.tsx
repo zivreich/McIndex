@@ -15,8 +15,8 @@ interface CountryData {
 
 // Placeholder component
 const BarChartVisualization = (
-  { data, timePeriod, currencyCode, currencySymbol }: 
-  { data: CountryData[]; timePeriod: string; currencyCode: string; currencySymbol: string }
+  { data, timePeriod, currencySymbol }: 
+  { data: CountryData[]; timePeriod: string; currencySymbol: string }
 ) => {
   return (
     <div className="w-full h-64 bg-gray-200 rounded-sm flex items-center justify-center text-gray-500">
@@ -37,7 +37,6 @@ export function ChartView({ sortedData, selectedTimePeriod, currency }: ChartVie
       <BarChartVisualization
         data={sortedData.slice(0, 15)} // Assuming similar logic as original
         timePeriod={selectedTimePeriod}
-        currencyCode={currency.code}
         currencySymbol={currency.symbol}
       />
     </div>

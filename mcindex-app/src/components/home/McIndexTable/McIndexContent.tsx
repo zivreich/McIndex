@@ -1,12 +1,12 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowUpDown, BarChart3, Globe, DollarSign } from "lucide-react";
+import { ArrowUpDown, Globe, DollarSign } from "lucide-react";
 import { useState } from "react";
 import { TableView } from "./TableView";
 import { MapView } from "./MapView";
 import { PppAnalysisView } from "./PppAnalysisView";
-import { useCurrency, type Currency as GlobalCurrency } from "@/contexts/CurrencyContext"; 
+import { useCurrency } from "@/contexts/CurrencyContext"; 
 
 // Existing type definitions (can be kept for dummy data or other views)
 interface Currency { 
@@ -30,11 +30,6 @@ interface BigMacHistoricalDataItem {
   currency: string;
   code: string;
 }
-
-const dummyCurrency: Currency = {
-  code: "USD",
-  symbol: "$",
-};
 
 const dummySortedData: CountryData[] = [
   {
@@ -86,7 +81,7 @@ export default function McIndexContent({
   selectedTimePeriod,
 }: McIndexContentProps) {
   const [activeTab, setActiveTab] = useState("table");
-  const { selectedCurrency: selectedGlobalCurrency } = useCurrency(); 
+  const { selectedCurrency } = useCurrency(); 
 
   const getMonthNameForApi = (year: number) => {
     const userCurrentDate = new Date("2025-05-20T20:45:33+03:00"); 
@@ -123,7 +118,7 @@ export default function McIndexContent({
         <TableView 
           timePeriodLabels={timePeriodLabels} 
           selectedTimePeriod={selectedTimePeriod} 
-          selectedGlobalCurrency={selectedGlobalCurrency} 
+          selectedGlobalCurrency={selectedCurrency} 
           monthForApi={monthForApi} 
           onCountrySelect={handleCountrySelect} 
         />
