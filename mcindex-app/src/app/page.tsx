@@ -1,5 +1,7 @@
 "use client";
 
+import OpenSource from "@/components/ui/open-source";
+
 export default function Home() {
   return (
     <div
@@ -23,29 +25,27 @@ export default function Home() {
       />
       {/* Content Area */}
       <div className="p-8 max-w-xl w-full relative z-10">
-        <pre className="text-center mb-6 text-yellow-400">
+        {/* <pre className="text-center mb-6 text-yellow-400">
           {`                                 
  _____     _____       _         
 |     |___|     |___ _| |___ _ _ 
 | | | |  _|-   -|   | . | -_|_'_|
 |_|_|_|___|_____|_|_|___|___|_,_|
                                  `}
-        </pre>
+        </pre> */}
 
-        <div className="flex justify-center mb-8">
-          <div className="blink text-center text-xl">
-            [ UNDER CONSTRUCTION ]
-          </div>
-        </div>
-
-        <div className="mb-8 text-center">
-          <div className="text-sm p-3">
-
-            <span className="text-yellow-400">▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░</span>
-            <br /><br />
-            {'>'} Expected completion: when it&apos;s ready
-          </div>
-        </div>
+        <OpenSource
+          repository="zivreich/McIndex"
+          title="McIndex"
+          description="McIndex: A global tracker of McDonald's prices to visualize cost-of-living & inflation worldwide."
+          buttonText="Star on GitHub"
+          githubToken={process.env.GITHUB_TOKEN}
+          comingSoon={true}
+          defaultStats={{
+            stars: 1,
+            contributors: []
+          }}
+        />
 
         <div className="text-center">
           <div className="text-sm p-3">
@@ -53,6 +53,7 @@ export default function Home() {
             <div>{'>'} <a href="https://github.com/zivreich/McIndex" className="text-yellow-400 hover:underline">github.com/zivreich/McIndex</a></div>
           </div>
         </div>
+
       </div>
 
       <style jsx>{`
