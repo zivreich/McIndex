@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Suspense, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 interface Contributor {
   avatar_url: string;
@@ -157,7 +157,7 @@ async function getGithubStats(
       stars: repoData.stargazers_count,
       contributors: contributorsData as Contributor[],
     };
-  } catch (error) {
+  } catch (_error) {
     return { stars: 1, contributors: [] };
   }
 }
@@ -329,6 +329,12 @@ export default function OpenSource({
 
     fetchGithubStats();
   }, [repository, githubToken]);
+
+  if (error) {
+    // Log the error or display an error message to the user
+    console.error("Failed to load GitHub stats.");
+    // Optionally, you could return a fallback UI here
+  }
 
   return (
     <>
