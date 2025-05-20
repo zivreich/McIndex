@@ -157,7 +157,8 @@ async function getGithubStats(
       stars: repoData.stargazers_count,
       contributors: contributorsData as Contributor[],
     };
-  } catch (_error) {
+  } catch (error) {
+    console.error('Error fetching GitHub stats in getGithubStats:', error);
     return { stars: 1, contributors: [] };
   }
 }
@@ -319,8 +320,8 @@ export default function OpenSource({
         const data = await getGithubStats(repository, githubToken);
         setStats(data);
         setError(false);
-      } catch (err) {
-        console.error('Error fetching GitHub stats:', err);
+      } catch (error) {
+        console.error('Error fetching GitHub stats:', error);
         setError(true);
       } finally {
         setLoading(false);
