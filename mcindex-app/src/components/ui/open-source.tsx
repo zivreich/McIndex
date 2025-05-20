@@ -272,7 +272,7 @@ function OpenSourceContent({
           <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
             {description}
           </p>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap justify-center gap-4">
             <Button variant="outline" size="lg" className="gap-2" asChild>
               <a
                 href={`https://github.com/${repository}`}
@@ -286,6 +286,15 @@ function OpenSourceContent({
                   ></path>
                 </svg>
                 {buttonText}
+              </a>
+            </Button>
+            <Button variant="outline" size="lg" className="gap-2" asChild>
+              <a
+                href="https://develop.themcindex.com"
+                target="_blank"
+                rel="noreferrer"
+              >
+                View Dev Build
               </a>
             </Button>
           </div>
