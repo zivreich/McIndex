@@ -6,9 +6,10 @@ import { useState } from "react";
 import { TableView } from "./TableView";
 import { MapView } from "./MapView";
 import { PppAnalysisView } from "./PppAnalysisView";
+import { useCurrency, type Currency as GlobalCurrency } from "@/contexts/CurrencyContext"; 
 
-// Existing type definitions
-interface Currency {
+// Existing type definitions (can be kept for dummy data or other views)
+interface Currency { 
   code: string;
   symbol: string;
 }
@@ -85,10 +86,19 @@ export default function McIndexContent({
   selectedTimePeriod,
 }: McIndexContentProps) {
   const [activeTab, setActiveTab] = useState("table");
+  const { selectedCurrency: selectedGlobalCurrency } = useCurrency(); 
+
+  const getMonthNameForApi = (year: number) => {
+    const userCurrentDate = new Date("2025-05-20T20:45:33+03:00"); 
+    if (year === userCurrentDate.getFullYear()) {
+      return userCurrentDate.toLocaleString('en-US', { month: 'long' }); 
+    }
+    return "January"; 
+  };
+  const monthForApi = getMonthNameForApi(selectedTimePeriod);
 
   const bigMacHistoricalData = dummyBigMacHistoricalData;
   const currentPriceData = dummyCurrentPriceData;
-  const currency = dummyCurrency;
 
   const handleCountrySelect = (countryCode: string) => {
     console.log("Country selected in McIndexContent:", countryCode);
@@ -113,7 +123,8 @@ export default function McIndexContent({
         <TableView 
           timePeriodLabels={timePeriodLabels} 
           selectedTimePeriod={selectedTimePeriod} 
-          currency={currency} 
+          selectedGlobalCurrency={selectedGlobalCurrency} 
+          monthForApi={monthForApi} 
           onCountrySelect={handleCountrySelect} 
         />
       </TabsContent>

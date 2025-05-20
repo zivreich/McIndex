@@ -13,24 +13,20 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; 
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from 'lucide-react';
+import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from 'lucide-react'; 
 
 // Import the type for fetched data from the API route
 import type { FetchedCountryProductInfo } from '@/app/api/countries/route'; 
+import type { Currency as GlobalCurrency } from '@/contexts/CurrencyContext'; 
+import { ConvertedPriceCell } from './ConvertedPriceCell'; 
 
-// Types from McIndexTable (or define locally if not exported globally)
-interface Currency {
-  code: string;
-  symbol: string;
-}
-
-// Helper to format price based on local currency data
+// Helper to format price based on local currency data (kept for PriceTrendCell etc. for now)
 const formatLocalPrice = (price: number | null | undefined, currencyMeta: FetchedCountryProductInfo['currencyMeta']): string => {
   if (price === null || typeof price === 'undefined') return "N/A";
   return `${currencyMeta.symbol}${price.toFixed(currencyMeta.decimals ? 2 : 0)}`;
 };
 
-// Re-define PriceTrendCell locally
+// PriceTrendCell remains unchanged for now, uses local currency
 const PriceTrendCell = (
   { currentPrice, previousPrice, currencySymbol }:
   { currentPrice: number | null; previousPrice: number | null; currencySymbol: string }
@@ -64,7 +60,7 @@ const PriceTrendCell = (
   );
 };
 
-// Re-define InlineChartCell locally
+// InlineChartCell remains unchanged for now, uses local currency
 const InlineChartCell = (
   { countryProductInfo, timePeriodLabel, currencySymbol }:
   {
@@ -83,11 +79,12 @@ const InlineChartCell = (
 interface TableViewProps {
   timePeriodLabels: Record<number, string>;
   selectedTimePeriod: number; 
-  currency: Currency; 
+  selectedGlobalCurrency: GlobalCurrency;     
+  monthForApi: string;                        
   onCountrySelect: (countryCode: string) => void; 
 }
 
-// Define the fetching function
+// Define the fetching function for country product data (remains the same)
 const fetchCountryProductData = async (year: number): Promise<FetchedCountryProductInfo[]> => {
   const response = await fetch(`/api/countries?year=${year}`);
   if (!response.ok) {
@@ -100,17 +97,16 @@ const fetchCountryProductData = async (year: number): Promise<FetchedCountryProd
 export function TableView({
   timePeriodLabels,
   selectedTimePeriod,
-  currency, 
+  selectedGlobalCurrency,
+  monthForApi,
   onCountrySelect,
 }: TableViewProps) {
   const currentPeriodLabel = timePeriodLabels[selectedTimePeriod] || String(selectedTimePeriod);
 
-  const { data: countryProductData, isLoading, isError, error } = useQuery<FetchedCountryProductInfo[], Error>(
-    {
-      queryKey: ['countryProductData', selectedTimePeriod],
-      queryFn: () => fetchCountryProductData(selectedTimePeriod),
-    }
-  );
+  const { data: countryProductData, isLoading, isError, error } = useQuery<FetchedCountryProductInfo[], Error>({
+    queryKey: ['countryProductData', selectedTimePeriod],
+    queryFn: () => fetchCountryProductData(selectedTimePeriod),
+  });
 
   if (isLoading) {
     return <div className="text-center p-10">Loading McData for {currentPeriodLabel}...</div>;
@@ -134,11 +130,9 @@ export function TableView({
         <TableHeader>
           <TableRow>
             <TableHead className="w-[200px]">Country</TableHead>
-            <TableHead>Big Mac Price ({currentPeriodLabel})</TableHead>
+            <TableHead>Price ({selectedGlobalCurrency.code})</TableHead>
             <TableHead>Price Trend</TableHead>
-            {/* <TableHead>PPP Index</TableHead> */} 
-            {/* <TableHead>GDP per Capita</TableHead> */} 
-            <TableHead className="text-right min-w-[200px]">Local Price Chart</TableHead>
+            <TableHead className="text-left min-w-[200px]">Price Chart</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -161,7 +155,13 @@ export function TableView({
                   </div>
                 </TableCell>
                 <TableCell>
-                  {formatLocalPrice(currentPrice, item.currencyMeta)}
+                  <ConvertedPriceCell
+                    localPrice={item.pricesForProduct.currentLocalPrice}
+                    localCurrencyMeta={item.currencyMeta}
+                    targetGlobalCurrency={selectedGlobalCurrency}
+                    year={selectedTimePeriod}
+                    monthForApi={monthForApi}
+                  />
                 </TableCell>
                 <TableCell>
                   <Tooltip>
