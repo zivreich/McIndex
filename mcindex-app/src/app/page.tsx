@@ -37,7 +37,7 @@ export default function Home() {
         <OpenSource
           repository="zivreich/McIndex"
           title="McIndex"
-          description="McIndex: A global tracker of McDonald's prices to visualize cost-of-living & inflation worldwide."
+          description="A global price tracker — from Big Macs to milk. Compare cost of living, inflation, and affordability in 100+ countries."
           buttonText="Star on GitHub"
           githubToken={process.env.GITHUB_TOKEN}
           comingSoon={true}

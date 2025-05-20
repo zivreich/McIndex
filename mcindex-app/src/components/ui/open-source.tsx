@@ -217,8 +217,8 @@ function OpenSourceCard({
             <div className="text-3xl font-bold">
               {contributors.length}+ Contributors
             </div>
-            <div className="text-lg text-muted-foreground mt-2">
-              Join our growing community
+            <div className="text-md text-muted-foreground mt-2">
+            Help us map the world, one Big Mac at a time.
             </div>
           </div>
           <a
@@ -266,7 +266,7 @@ function OpenSourceContent({
           </h2>
           {comingSoon && (
             <p className="animate-pulse text-sm py-6 pt-0 text-center text-yellow-400">
-              [COMING SOON]
+              [Launching Soon]
             </p>
           )}
           <p className="text-xl text-muted-foreground max-w-[800px] mx-auto">
