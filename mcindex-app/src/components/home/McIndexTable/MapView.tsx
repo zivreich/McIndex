@@ -1,53 +1,63 @@
 "use client";
 
-// Placeholder types
+import type { FetchedCountryProductInfo } from '@/app/api/countries/route';
+
+// Placeholder types - MapDataPoint now reflects what we can get from FetchedCountryProductInfo
 interface MapDataPoint {
-  country: string;
-  price: number;
-  currency: string;
-  code: string;
+  countryName: string;    // from FetchedCountryProductInfo.countryName
+  countryCode: string;    // from FetchedCountryProductInfo.countryCode
+  localPrice: number | null; // from FetchedCountryProductInfo.pricesForProduct.currentLocalPrice
+  currencyCode: string;   // from FetchedCountryProductInfo.currencyMeta.code
+  // Potentially add converted price if MapVisualization needs it, 
+  // or handle conversion within MapVisualization if it becomes more complex.
 }
 
 // Placeholder component
 const MapVisualization = (
   { data, periodLabel }: 
-  { data: MapDataPoint[]; periodLabel: string } // Expects a string label
+  { data: MapDataPoint[]; periodLabel: string } 
 ) => {
   return (
     <div className="w-full h-64 bg-gray-200 rounded-sm flex items-center justify-center text-gray-500">
       [Map Visualization: {data.length} locations for {periodLabel}]
+      {/* Example of how you might display some data points */}
+      {/* {data.slice(0, 3).map(d => <div key={d.countryCode}>{d.countryName}: {d.localPrice} {d.currencyCode}</div>)} */}
     </div>
   );
 };
 
 interface MapViewProps {
-  bigMacHistoricalData: Array<{
-    country: string;
-    currentPrice: number; // Assuming this maps to 'price' for MapDataPoint
-    currency: string;
-    code: string;
-    // other fields from original data structure
-  }>;
-  timePeriodLabels: Record<number, string>; // Changed to number keys
-  selectedTimePeriod: number;             // Changed to number
+  countryProductData: FetchedCountryProductInfo[]; // Updated prop
+  timePeriodLabels: Record<number, string>; 
+  selectedTimePeriod: number;            
+  // selectedGlobalCurrency and monthForApi could be passed if conversion is needed here
 }
 
-export function MapView({ bigMacHistoricalData, timePeriodLabels, selectedTimePeriod }: MapViewProps) {
-  const mapData: MapDataPoint[] = bigMacHistoricalData.map((item) => ({
-    country: item.country,
-    price: item.currentPrice,
-    currency: item.currency,
-    code: item.code,
-  }));
+export function MapView({ countryProductData, timePeriodLabels, selectedTimePeriod }: MapViewProps) {
+  const mapData: MapDataPoint[] = countryProductData
+    .filter(item => item.pricesForProduct.currentLocalPrice !== null) // Only include items with a price
+    .map((item) => ({
+      countryName: item.countryName,
+      countryCode: item.countryCode,
+      localPrice: item.pricesForProduct.currentLocalPrice,
+      currencyCode: item.currencyMeta.code,
+    }));
 
-  // Get the string label for the selected year, fallback to stringified year if not found
   const currentPeriodLabel = timePeriodLabels[selectedTimePeriod] || String(selectedTimePeriod);
+
+  if (!countryProductData || countryProductData.length === 0) {
+    return (
+      <div className="border rounded-md p-4 text-center text-muted-foreground">
+        No data available for map visualization for {currentPeriodLabel}.
+      </div>
+    );
+  }
 
   return (
     <div className="border rounded-md p-4">
       <MapVisualization
         data={mapData}
-        periodLabel={currentPeriodLabel} // Pass the string label
+        periodLabel={currentPeriodLabel}
       />
     </div>
   );

@@ -57,6 +57,7 @@ export interface FetchedCountryProductInfo {
   countryCode: string;          // "US" (for display, linking)
   currencyMeta: RawCurrencyData;
   flag: string;
+  selectedProductId: string;    // New field: To indicate which product was selected
   pricesForProduct: {
     requestedYear: number;
     currentLocalPrice: number | null;
@@ -71,7 +72,8 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const yearParam = searchParams.get('year');
-    // const productKeyParam = searchParams.get('productKey'); // For future use
+    const productKeyParam = searchParams.get('product_id');
+    const randomizeParam = searchParams.get('randomize');
 
     if (!yearParam) {
       return NextResponse.json({ error: 'Year query parameter is required' }, { status: 400 });
@@ -82,17 +84,50 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Year must be a valid number' }, { status: 400 });
     }
 
-    const productKey = PRODUCT_KEY_DEFAULT; // Using default for now
-
     const filePath = path.join(process.cwd(), 'src', 'data', 'data-sample.json');
     const jsonData = await fs.readFile(filePath, 'utf-8');
     const data = JSON.parse(jsonData) as RawDataSample;
 
     const responseData: FetchedCountryProductInfo[] = Object.keys(data).map(countryId => {
       const countryEntry = data[countryId];
-      if (!countryEntry) return null; // Should not happen if data is well-formed
+      if (!countryEntry) return null;
 
-      const productPrices = countryEntry.prices?.[productKey];
+      let productKeyToUse: string;
+      let selectedProductIdForResponse: string;
+
+      if (productKeyParam) {
+        productKeyToUse = productKeyParam;
+        selectedProductIdForResponse = productKeyParam;
+        if (!countryEntry.prices?.[productKeyToUse]) {
+          // Decide handling: for now, prices will be null. Could also error or use default.
+        }
+      } else if (randomizeParam === 'true') {
+        const availableProductKeys = Object.keys(countryEntry.prices || {});
+        if (availableProductKeys.length === 0) {
+          return {
+            id: countryId,
+            countryName: countryEntry.country,
+            countryCode: countryEntry.code,
+            currencyMeta: countryEntry.currency,
+            flag: countryEntry.meta.flag,
+            selectedProductId: "N/A",
+            pricesForProduct: {
+              requestedYear,
+              currentLocalPrice: null,
+              previousAvailableYear: null,
+              previousLocalPrice: null,
+            },
+          };
+        }
+        const randomIndex = Math.floor(Math.random() * availableProductKeys.length);
+        productKeyToUse = availableProductKeys[randomIndex];
+        selectedProductIdForResponse = productKeyToUse;
+      } else {
+        productKeyToUse = PRODUCT_KEY_DEFAULT;
+        selectedProductIdForResponse = PRODUCT_KEY_DEFAULT;
+      }
+
+      const productPrices = countryEntry.prices?.[productKeyToUse];
       let currentLocalPrice: number | null = null;
       let previousLocalPrice: number | null = null;
       let previousAvailableYear: number | null = null;
@@ -103,7 +138,7 @@ export async function GET(request: NextRequest) {
         const availableYears = Object.keys(productPrices)
           .map(y => parseInt(y, 10))
           .filter(y => !isNaN(y) && y < requestedYear)
-          .sort((a, b) => b - a); // Sort descending to get closest previous year
+          .sort((a, b) => b - a);
 
         if (availableYears.length > 0) {
           previousAvailableYear = availableYears[0];
@@ -117,6 +152,7 @@ export async function GET(request: NextRequest) {
         countryCode: countryEntry.code,
         currencyMeta: countryEntry.currency,
         flag: countryEntry.meta.flag,
+        selectedProductId: selectedProductIdForResponse,
         pricesForProduct: {
           requestedYear,
           currentLocalPrice,
@@ -124,7 +160,7 @@ export async function GET(request: NextRequest) {
           previousLocalPrice,
         },
       };
-    }).filter(Boolean) as FetchedCountryProductInfo[]; // Filter out any nulls (though unlikely)
+    }).filter(Boolean) as FetchedCountryProductInfo[];
 
     return NextResponse.json(responseData);
 
@@ -134,8 +170,6 @@ export async function GET(request: NextRequest) {
     if (error instanceof Error) {
         errorMessage = error.message;
     }
-    // Check for specific errors like file not found
-    // For security, don't expose too detailed error messages to the client in production
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         return NextResponse.json({ error: 'Data file not found' }, { status: 500 });
     }

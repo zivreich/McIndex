@@ -75,7 +75,17 @@ const InlineChartCell = (
   );
 };
 
+interface TableDisplayItem {
+  id: string;
+  countryName: string;
+  countryCode: string;
+  flag: string;
+  trendValue: number; // Calculated for sorting/displaying trend icon
+  fullItemData: FetchedCountryProductInfo; // Pass complete item for complex cells
+}
+
 interface TableViewProps {
+  countryProductData: FetchedCountryProductInfo[]; 
   timePeriodLabels: Record<number, string>;
   selectedTimePeriod: number; 
   selectedGlobalCurrency: GlobalCurrency;     
@@ -83,43 +93,27 @@ interface TableViewProps {
   onCountrySelect: (countryCode: string) => void; 
 }
 
-// Define the fetching function for country product data (remains the same)
-const fetchCountryProductData = async (year: number): Promise<FetchedCountryProductInfo[]> => {
-  const response = await fetch(`/api/countries?year=${year}`);
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to fetch country product data');
-  }
-  return response.json();
-};
-
 export function TableView({
-  timePeriodLabels,
-  selectedTimePeriod,
+  countryProductData,
+  timePeriodLabels, 
+  selectedTimePeriod, 
   selectedGlobalCurrency,
   monthForApi,
-  onCountrySelect,
+  onCountrySelect 
 }: TableViewProps) {
   const currentPeriodLabel = timePeriodLabels[selectedTimePeriod] || String(selectedTimePeriod);
 
-  const { data: countryProductData, isLoading, isError, error } = useQuery<FetchedCountryProductInfo[], Error>({
-    queryKey: ['countryProductData', selectedTimePeriod],
-    queryFn: () => fetchCountryProductData(selectedTimePeriod),
-  });
+  // Transform FetchedCountryProductInfo to TableDisplayItem
+  const mappedData: TableDisplayItem[] = countryProductData.map((item: FetchedCountryProductInfo) => ({
+    id: item.id,
+    countryName: item.countryName,
+    countryCode: item.countryCode,
+    flag: item.flag,
+    trendValue: (item.pricesForProduct.currentLocalPrice ?? 0) - (item.pricesForProduct.previousLocalPrice ?? 0),
+    fullItemData: item,
+  }));
 
-  if (isLoading) {
-    return <div className="text-center p-10">Loading McData for {currentPeriodLabel}...</div>;
-  }
-
-  if (isError) {
-    return <div className="text-center p-10 text-red-600">Error loading data: {error?.message || 'Unknown error'}</div>;
-  }
-
-  if (!countryProductData || countryProductData.length === 0) {
-    return <div className="text-center p-10">No data available for {currentPeriodLabel}.</div>;
-  }
-  
-  const sortedDisplayData = [...countryProductData].sort((a, b) =>
+  const sortedDisplayData = [...mappedData].sort((a, b) =>
     a.countryName.localeCompare(b.countryName)
   );
 
@@ -136,8 +130,8 @@ export function TableView({
         </TableHeader>
         <TableBody>
           {sortedDisplayData.map((item) => {
-            const currentPrice = item.pricesForProduct.currentLocalPrice;
-            const previousPrice = item.pricesForProduct.previousLocalPrice;
+            const currentPrice = item.fullItemData.pricesForProduct.currentLocalPrice;
+            const previousPrice = item.fullItemData.pricesForProduct.previousLocalPrice;
             let trendPercentage: number | null = null;
             if (currentPrice !== null && previousPrice !== null && previousPrice !== 0) {
               trendPercentage = ((currentPrice - previousPrice) / previousPrice) * 100;
@@ -155,11 +149,11 @@ export function TableView({
                 </TableCell>
                 <TableCell>
                   <ConvertedPriceCell
-                    localPrice={item.pricesForProduct.currentLocalPrice}
-                    localCurrencyMeta={item.currencyMeta}
-                    targetGlobalCurrency={selectedGlobalCurrency}
-                    year={selectedTimePeriod}
-                    monthForApi={monthForApi}
+                    countryProductInfo={item.fullItemData} // Pass the full original item
+                    targetGlobalCurrency={selectedGlobalCurrency} // Corrected prop name
+                    year={selectedTimePeriod} // This is the main year context
+                    month={monthForApi}       // Month context for API calls
+                    priceType="current" // Explicitly ask for current price
                   />
                 </TableCell>
                 <TableCell>
@@ -169,17 +163,17 @@ export function TableView({
                         <PriceTrendCell
                           currentPrice={currentPrice}
                           previousPrice={previousPrice}
-                          currencySymbol={item.currencyMeta.symbol} 
+                          currencySymbol={item.fullItemData.currencyMeta.symbol} 
                         />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent className="bg-background border text-foreground">
                       <div className="text-sm">
-                        <div>Current ({currentPeriodLabel}): {formatLocalPrice(currentPrice, item.currencyMeta)}</div>
-                        {item.pricesForProduct.previousAvailableYear && (
+                        <div>Current ({currentPeriodLabel}): {formatLocalPrice(currentPrice, item.fullItemData.currencyMeta)}</div>
+                        {item.fullItemData.pricesForProduct.previousAvailableYear && (
                           <div>
-                            Previous ({item.pricesForProduct.previousAvailableYear}): 
-                            {formatLocalPrice(previousPrice, item.currencyMeta)}
+                            Previous ({item.fullItemData.pricesForProduct.previousAvailableYear}): 
+                            {formatLocalPrice(previousPrice, item.fullItemData.currencyMeta)}
                           </div>
                         )}
                         {trendPercentage !== null && (
@@ -193,9 +187,9 @@ export function TableView({
                 </TableCell>
                 <TableCell className="min-w-[200px]">
                   <InlineChartCell
-                    countryProductInfo={item} 
+                    countryProductInfo={item.fullItemData} 
                     timePeriodLabel={currentPeriodLabel}
-                    currencySymbol={item.currencyMeta.symbol} 
+                    currencySymbol={item.fullItemData.currencyMeta.symbol} 
                   />
                 </TableCell>
               </TableRow>

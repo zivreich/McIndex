@@ -11,25 +11,24 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useQuery,
-  QueryClientProvider,
-  QueryClient,
 } from "@tanstack/react-query";
+import { useProduct } from "@/contexts/ProductContext";
 
-type ProductOption = {
+interface ProductOption {
   id: string;
   name: string;
   description: string;
-};
-
-const queryClient = new QueryClient();
+}
 
 function ComparisonSelector() {
-  const [selectedProduct, setSelectedProduct] = useState<ProductOption | null>(null);
+  const { selectedProductId, setSelectedProductId } = useProduct();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const { isPending, error, data: apiResponse } = useQuery<{
-    products: ProductOption[];
-  }>({
+  const { 
+    isPending,
+    error,
+    data: apiResponse 
+  } = useQuery<{ products: ProductOption[] }>({
     queryKey: ["products"],
     queryFn: () => fetch("/api/products").then((res) => res.json()),
   });
@@ -39,16 +38,18 @@ function ComparisonSelector() {
       !isPending &&
       apiResponse?.products &&
       apiResponse.products.length > 0 &&
-      !selectedProduct
+      !apiResponse.products.find(p => p.id === selectedProductId)
     ) {
-      setSelectedProduct(apiResponse.products[0]); // Set default selected product
+      setSelectedProductId(apiResponse.products[0].id);
     }
-  }, [isPending, apiResponse, selectedProduct]);
+  }, [isPending, apiResponse, selectedProductId, setSelectedProductId]);
 
   const handleProductSelect = (product: ProductOption) => {
-    setSelectedProduct(product);
-    setIsDropdownOpen(false); // Close dropdown after selection
+    setSelectedProductId(product.id);
+    setIsDropdownOpen(false);
   };
+
+  const currentSelectedProductObject = apiResponse?.products.find(p => p.id === selectedProductId);
 
   const renderLoadingState = () => (
     <p className="text-muted-foreground px-2 py-1">
@@ -81,7 +82,7 @@ function ComparisonSelector() {
               className="outline-none cursor-pointer font-semibold hover:underline-offset-4 transition-all inline-flex items-center gap-1 px-2 text-primary underline disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isPending || !apiResponse?.products || apiResponse.products.length === 0}
             >
-              {selectedProduct ? selectedProduct.name : "Select Product"}
+              {currentSelectedProductObject ? currentSelectedProductObject.name : (isPending ? "Loading..." : "Select Product")}
               <ChevronsUpDown className="h-3 w-3 opacity-70" />
             </button>
           </DropdownMenuTrigger>
@@ -91,14 +92,14 @@ function ComparisonSelector() {
                 key={product.id}
                 className={cn(
                   "flex flex-col items-start gap-1 cursor-pointer",
-                  selectedProduct?.id === product.id && "bg-accent font-medium"
+                  selectedProductId === product.id && "bg-accent font-medium"
                 )}
                 onClick={() => handleProductSelect(product)}
-                disabled={!product.id} // Basic check, can be expanded
+                disabled={!product.id}
               >
                 <div className="flex w-full items-center">
                   <span className="font-medium">{product.name}</span>
-                  {selectedProduct?.id === product.id && (
+                  {selectedProductId === product.id && (
                     <Check className="ml-auto h-4 w-4" />
                   )}
                 </div>
@@ -125,10 +126,4 @@ function ComparisonSelector() {
   return renderSuccessState();
 }
 
-export default function TanstackWrapper() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ComparisonSelector />
-    </QueryClientProvider>
-  );
-}
+export default ComparisonSelector;

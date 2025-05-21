@@ -1,75 +1,48 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowUpDown, Globe, DollarSign } from "lucide-react";
+import { ArrowUpDown, Globe, DollarSign, Loader2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { TableView } from "./TableView";
 import { MapView } from "./MapView";
 import { PppAnalysisView } from "./PppAnalysisView";
 import { useCurrency } from "@/contexts/CurrencyContext"; 
+import { useProduct } from "@/contexts/ProductContext"; 
+import { useQuery } from "@tanstack/react-query"; 
 
-// Existing type definitions (can be kept for dummy data or other views)
-interface CountryData {
-  code: string;
-  country: string;
-  price: number;
-  priceInSelectedCurrency: number;
-  previousPrice: number;
-  previousPriceInSelectedCurrency: number;
-  currency: string;
+interface FetchedCountryProductInfo {
+  id: string;
+  countryName: string;
+  countryCode: string;
+  currencyMeta: { code: string; decimals: boolean; symbol: string; };
+  flag: string;
+  selectedProductId: string; 
+  pricesForProduct: {
+    requestedYear: number;
+    currentLocalPrice: number | null;
+    previousAvailableYear: number | null;
+    previousLocalPrice: number | null;
+  };
 }
 
-interface BigMacHistoricalDataItem {
-  country: string;
-  currentPrice: number;
-  currency: string;
-  code: string;
-}
-
-const dummySortedData: CountryData[] = [
-  {
-    code: "US",
-    country: "United States",
-    price: 5.81,
-    priceInSelectedCurrency: 5.81,
-    previousPrice: 5.65,
-    previousPriceInSelectedCurrency: 5.65,
-    currency: "USD",
-  },
-  {
-    code: "EU",
-    country: "Euro Area",
-    price: 4.85,
-    priceInSelectedCurrency: 5.25,
-    previousPrice: 4.70,
-    previousPriceInSelectedCurrency: 5.10,
-    currency: "EUR",
-  },
-  {
-    code: "JP",
-    country: "Japan",
-    price: 450,
-    priceInSelectedCurrency: 3.15,
-    previousPrice: 430,
-    previousPriceInSelectedCurrency: 3.00,
-    currency: "JPY",
-  },
-];
-
-const dummyBigMacHistoricalData: BigMacHistoricalDataItem[] = dummySortedData.map(item => ({
-  country: item.country,
-  currentPrice: item.price, 
-  currency: item.currency,
-  code: item.code,
-}));
-
-const dummyCurrentPriceData: CountryData[] = [...dummySortedData]; 
-
-// Define props interface for McIndexContent
 interface McIndexContentProps {
   timePeriodLabels: Record<number, string>;
   selectedTimePeriod: number;
 }
+
+const fetchCountryProductData = async (year: number, productId: string): Promise<FetchedCountryProductInfo[]> => {
+  const res = await fetch(`/api/countries?year=${year}&product_id=${productId}`);
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ error: 'Failed to fetch country product data and parse error response' }));
+    throw new Error(errorData.error || 'Failed to fetch country product data');
+  }
+  const data = await res.json();
+  if (!Array.isArray(data)) {
+    console.error('API /api/countries did not return an array:', data);
+    throw new Error('Invalid data format from /api/countries');
+  }
+  return data;
+};
 
 export default function McIndexContent({
   timePeriodLabels,
@@ -77,9 +50,10 @@ export default function McIndexContent({
 }: McIndexContentProps) {
   const [activeTab, setActiveTab] = useState("table");
   const { selectedCurrency } = useCurrency(); 
+  const { selectedProductId } = useProduct(); 
 
   const getMonthNameForApi = (year: number) => {
-    const userCurrentDate = new Date("2025-05-20T20:45:33+03:00"); 
+    const userCurrentDate = new Date("2025-05-21T10:28:40+03:00"); 
     if (year === userCurrentDate.getFullYear()) {
       return userCurrentDate.toLocaleString('en-US', { month: 'long' }); 
     }
@@ -87,13 +61,39 @@ export default function McIndexContent({
   };
   const monthForApi = getMonthNameForApi(selectedTimePeriod);
 
-  const bigMacHistoricalData = dummyBigMacHistoricalData;
-  const currentPriceData = dummyCurrentPriceData;
+  const { 
+    data: countryProductData, 
+    isLoading: isLoadingCountryProductData,
+    isError: isErrorCountryProductData,
+    error: countryProductDataError
+  } = useQuery<FetchedCountryProductInfo[], Error>({
+    queryKey: ['countryProductData', selectedTimePeriod, selectedProductId],
+    queryFn: () => fetchCountryProductData(selectedTimePeriod, selectedProductId),
+    staleTime: 1000 * 60 * 5, 
+  });
 
   const handleCountrySelect = (countryCode: string) => {
     console.log("Country selected in McIndexContent:", countryCode);
-    // Future: Set state, navigate, or open a modal, etc.
   };
+  
+  if (isLoadingCountryProductData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2">Loading product data for table...</p>
+      </div>
+    );
+  }
+
+  if (isErrorCountryProductData) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 p-4 border rounded-md bg-destructive/10 text-destructive">
+        <AlertTriangle className="h-8 w-8 mb-2" />
+        <p className="font-semibold">Error loading product data:</p>
+        <p className="text-sm">{(countryProductDataError as Error)?.message || 'An unknown error occurred'}</p>
+      </div>
+    );
+  }
 
   return (
     <Tabs defaultValue="table" value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -111,6 +111,7 @@ export default function McIndexContent({
 
       <TabsContent value="table" className="border rounded-md overflow-hidden">
         <TableView 
+          countryProductData={countryProductData || []} 
           timePeriodLabels={timePeriodLabels} 
           selectedTimePeriod={selectedTimePeriod} 
           selectedGlobalCurrency={selectedCurrency} 
@@ -121,7 +122,7 @@ export default function McIndexContent({
 
       <TabsContent value="map">
         <MapView 
-          bigMacHistoricalData={bigMacHistoricalData} 
+          countryProductData={countryProductData || []} 
           timePeriodLabels={timePeriodLabels} 
           selectedTimePeriod={selectedTimePeriod} 
         />
@@ -129,7 +130,7 @@ export default function McIndexContent({
 
       <TabsContent value="ppp">
         <PppAnalysisView 
-          currentPriceData={currentPriceData} 
+          countryProductData={countryProductData || []} 
         />
       </TabsContent>
     </Tabs>
