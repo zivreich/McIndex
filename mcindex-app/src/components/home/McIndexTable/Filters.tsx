@@ -11,7 +11,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-export type SortOrder = 'asc' | 'desc' | 'none';
+export type SortConfig = {
+  column: 'country' | 'price' | 'trend' | null;
+  order: 'asc' | 'desc' | null;
+};
 
 interface FiltersProps {
   timePeriodLabels: Record<number, string>;
@@ -19,8 +22,8 @@ interface FiltersProps {
   onTimePeriodChange: (period: number) => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
-  sortOrder: SortOrder;
-  onSortChange: (order: SortOrder) => void;
+  sortConfig: SortConfig;
+  onSortChange: (config: SortConfig) => void;
 }
 
 export default function Filters({
@@ -29,36 +32,55 @@ export default function Filters({
   onTimePeriodChange,
   searchTerm,
   onSearchChange,
-  sortOrder,
+  sortConfig,
   onSortChange,
 }: FiltersProps) {
 
   const handleSortClick = () => {
-    const nextOrder: SortOrder = sortOrder === 'none' ? 'asc' : sortOrder === 'asc' ? 'desc' : 'none';
-    onSortChange(nextOrder);
+    if (sortConfig.column !== 'price') {
+      // If not currently sorting by price, start with ascending
+      onSortChange({ column: 'price', order: 'asc' });
+    } else {
+      // If currently sorting by price, cycle through asc -> desc -> none
+      if (sortConfig.order === 'asc') {
+        onSortChange({ column: 'price', order: 'desc' });
+      } else if (sortConfig.order === 'desc') {
+        onSortChange({ column: null, order: null });
+      } else {
+        onSortChange({ column: 'price', order: 'asc' });
+      }
+    }
   };
 
   const getSortIcon = () => {
-    switch (sortOrder) {
-      case 'asc':
-        return <ArrowUp className="h-4 w-4" />;
-      case 'desc':
-        return <ArrowDown className="h-4 w-4" />;
-      default:
-        return <ArrowUpDown className="h-4 w-4" />;
+    if (sortConfig.column === 'price') {
+      switch (sortConfig.order) {
+        case 'asc':
+          return <ArrowUp className="h-4 w-4" />;
+        case 'desc':
+          return <ArrowDown className="h-4 w-4" />;
+        default:
+          return <ArrowUpDown className="h-4 w-4" />;
+      }
     }
+    return <ArrowUpDown className="h-4 w-4" />;
   };
 
   const getSortLabel = () => {
-    switch (sortOrder) {
-      case 'asc':
-        return 'Price (Low to High)';
-      case 'desc':
-        return 'Price (High to Low)';
-      default:
-        return 'Sort by Price';
+    if (sortConfig.column === 'price') {
+      switch (sortConfig.order) {
+        case 'asc':
+          return 'Price (Low to High)';
+        case 'desc':
+          return 'Price (High to Low)';
+        default:
+          return 'Sort by Price';
+      }
     }
+    return 'Sort by Price';
   };
+
+  const isActivePriceSort = sortConfig.column === 'price';
 
   return (
     <div>
@@ -104,7 +126,7 @@ export default function Filters({
         </DropdownMenu>
 
         <Button
-          variant={sortOrder !== 'none' ? 'default' : 'outline'}
+          variant={isActivePriceSort ? 'default' : 'outline'}
           className="font-mono flex items-center gap-2 whitespace-nowrap"
           onClick={handleSortClick}
         >

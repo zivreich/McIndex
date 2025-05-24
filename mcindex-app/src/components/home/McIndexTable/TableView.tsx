@@ -9,17 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"; 
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from 'lucide-react'; 
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ArrowUpIcon, ArrowDownIcon, MinusIcon, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'; 
 import { cn } from "@/lib/utils";
 import { RelativePriceBar } from './RelativePriceBar'; 
 
 import type { FetchedCountryProductInfo } from '@/app/api/countries/route'; 
 import type { EnhancedCountryProductInfo } from './McIndexContent'; 
 import type { Currency as GlobalCurrency } from '@/contexts/CurrencyContext'; 
-import type { SortOrder } from './Filters';
-import { ConvertedPriceCell } from './ConvertedPriceCell'; 
+import type { SortConfig } from './Filters';
+import { ConvertedPriceCell } from './ConvertedPriceCell';
 
 const formatLocalPrice = (price: number | null | undefined, currencyMeta: FetchedCountryProductInfo['currencyMeta']): string => {
   if (price === null || typeof price === 'undefined') return "N/A";
@@ -129,29 +128,84 @@ interface TableViewProps {
   countryProductData: EnhancedCountryProductInfo[]; 
   minGlobalPrice: number; 
   maxGlobalPrice: number; 
-  timePeriodLabels: Record<number, string>;
-  selectedTimePeriod: number; 
   selectedGlobalCurrency: GlobalCurrency;     
   monthForApi: string;                        
   onCountrySelect: (countryCode: string) => void;
   searchTerm?: string;
-  sortOrder?: SortOrder;
+  sortConfig?: SortConfig;
+  onSortChange?: (config: SortConfig) => void;
 }
+
+const SortableHeader = ({ 
+  children, 
+  column, 
+  sortConfig, 
+  onSort 
+}: { 
+  children: React.ReactNode;
+  column: 'country' | 'price' | 'trend';
+  sortConfig?: SortConfig;
+  onSort?: (config: SortConfig) => void;
+}) => {
+  const handleClick = () => {
+    if (!onSort) return;
+    
+    if (sortConfig?.column !== column) {
+      // If not currently sorting by this column, start with ascending
+      onSort({ column, order: 'asc' });
+    } else {
+      // If currently sorting by this column, cycle through asc -> desc -> none
+      if (sortConfig.order === 'asc') {
+        onSort({ column, order: 'desc' });
+      } else if (sortConfig.order === 'desc') {
+        onSort({ column: null, order: null });
+      } else {
+        onSort({ column, order: 'asc' });
+      }
+    }
+  };
+
+  const getSortIcon = () => {
+    if (sortConfig?.column === column) {
+      switch (sortConfig.order) {
+        case 'asc':
+          return <ArrowUp className="h-4 w-4" />;
+        case 'desc':
+          return <ArrowDown className="h-4 w-4" />;
+        default:
+          return <ArrowUpDown className="h-4 w-4 opacity-50" />;
+      }
+    }
+    return <ArrowUpDown className="h-4 w-4 opacity-50" />;
+  };
+
+  const isActive = sortConfig?.column === column;
+
+  return (
+    <div 
+      className={cn(
+        "flex items-center gap-2 cursor-pointer hover:bg-muted/50 px-2 py-1 rounded transition-colors select-none",
+        isActive && "text-primary"
+      )}
+      onClick={handleClick}
+    >
+      <span>{children}</span>
+      {getSortIcon()}
+    </div>
+  );
+};
 
 export function TableView({
   countryProductData,
   minGlobalPrice, 
   maxGlobalPrice, 
-  timePeriodLabels, 
-  selectedTimePeriod, 
   selectedGlobalCurrency,
   monthForApi,
   onCountrySelect,
   searchTerm = "",
-  sortOrder = 'none'
+  sortConfig,
+  onSortChange
 }: TableViewProps) {
-  const currentPeriodLabel = timePeriodLabels[selectedTimePeriod] || String(selectedTimePeriod);
-
   const mappedData: TableDisplayItem[] = countryProductData.map((item: EnhancedCountryProductInfo) => ({
     id: item.id,
     countryName: item.countryName,
@@ -173,29 +227,48 @@ export function TableView({
   });
 
   const sortedDisplayData = [...filteredData].sort((a, b) => {
-    // Always sort by country name first if sortOrder is 'none'
-    if (sortOrder === 'none') {
+    // If no sorting is active, sort by country name
+    if (!sortConfig || sortConfig.column === null) {
       return a.countryName.localeCompare(b.countryName);
     }
     
-    // Sort by price
-    const priceA = a.currentGlobalPrice ?? 0;
-    const priceB = b.currentGlobalPrice ?? 0;
-    
-    // Handle null values - put items with no price at the end
-    if (a.currentGlobalPrice === null && b.currentGlobalPrice === null) {
-      return a.countryName.localeCompare(b.countryName);
+    switch (sortConfig.column) {
+      case 'country':
+        if (sortConfig.order === 'asc') {
+          return a.countryName.localeCompare(b.countryName);
+        } else if (sortConfig.order === 'desc') {
+          return b.countryName.localeCompare(a.countryName);
+        }
+        break;
+        
+      case 'price':
+        const priceA = a.currentGlobalPrice ?? 0;
+        const priceB = b.currentGlobalPrice ?? 0;
+        
+        // Handle null values - put items with no price at the end
+        if (a.currentGlobalPrice === null && b.currentGlobalPrice === null) {
+          return a.countryName.localeCompare(b.countryName);
+        }
+        if (a.currentGlobalPrice === null) return 1;
+        if (b.currentGlobalPrice === null) return -1;
+        
+        if (sortConfig.order === 'asc') {
+          return priceA - priceB;
+        } else if (sortConfig.order === 'desc') {
+          return priceB - priceA;
+        }
+        break;
+        
+      case 'trend':
+        if (sortConfig.order === 'asc') {
+          return a.trendValue - b.trendValue;
+        } else if (sortConfig.order === 'desc') {
+          return b.trendValue - a.trendValue;
+        }
+        break;
     }
-    if (a.currentGlobalPrice === null) return 1;
-    if (b.currentGlobalPrice === null) return -1;
     
-    // Sort by price
-    if (sortOrder === 'asc') {
-      return priceA - priceB;
-    } else if (sortOrder === 'desc') {
-      return priceB - priceA;
-    }
-    
+    // Fallback to country name
     return a.countryName.localeCompare(b.countryName);
   });
 
@@ -204,9 +277,21 @@ export function TableView({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[200px] px-6 py-4">Country</TableHead>
-            <TableHead className="px-6 py-4">Price ({selectedGlobalCurrency.code})</TableHead>
-            <TableHead className="px-6 py-4">Price Trend</TableHead>
+            <TableHead className="w-[200px] px-6 py-4">
+              <SortableHeader column="country" sortConfig={sortConfig} onSort={onSortChange}>
+                Country
+              </SortableHeader>
+            </TableHead>
+            <TableHead className="px-6 py-4">
+              <SortableHeader column="price" sortConfig={sortConfig} onSort={onSortChange}>
+                Price ({selectedGlobalCurrency.code})
+              </SortableHeader>
+            </TableHead>
+            <TableHead className="px-6 py-4">
+              <SortableHeader column="trend" sortConfig={sortConfig} onSort={onSortChange}>
+                Price Trend
+              </SortableHeader>
+            </TableHead>
             <TableHead className="text-left min-w-[240px] px-6 py-4">Price Comparison</TableHead>
           </TableRow>
         </TableHeader>
@@ -217,7 +302,7 @@ export function TableView({
                 <div className="flex flex-col items-center justify-center space-y-2">
                   <div className="text-muted-foreground text-sm">
                     {searchTerm.trim() ? (
-                      <>No countries found matching "<strong>{searchTerm}</strong>"</>
+                      <>No countries found matching &ldquo;{searchTerm}&rdquo;</>
                     ) : (
                       'No data available'
                     )}
@@ -332,3 +417,4 @@ export function TableView({
     </TooltipProvider>
   );
 }
+

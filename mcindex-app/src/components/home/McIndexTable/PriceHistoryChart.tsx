@@ -15,6 +15,7 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { cn } from "@/lib/utils";
 import type { Currency as GlobalCurrency } from '@/contexts/CurrencyContext';
 
 interface PricePoint {
@@ -82,7 +83,7 @@ export function PriceHistoryChart({ priceHistory, currency, className }: PriceHi
               content={<ChartTooltipContent
                 indicator="line"
                 labelFormatter={(label: string | number) => `Date: ${label}`}
-                formatter={(value: number) => [
+                formatter={(value: unknown) => [
                   `${currency.symbol}${Number(value).toFixed(2)} (${currency.code})`,
                   "Price"
                 ]}
@@ -101,11 +102,4 @@ export function PriceHistoryChart({ priceHistory, currency, className }: PriceHi
       </ChartContainer>
     </div>
   );
-}
-
-// Helper function cn if not globally available (assuming it's from '@/lib/utils')
-// You might need to import it or define it if PriceHistoryChart.tsx doesn't have access to it.
-// For example:
-function cn(...inputs: any[]) {
-    return inputs.filter(Boolean).join(' ');
 }

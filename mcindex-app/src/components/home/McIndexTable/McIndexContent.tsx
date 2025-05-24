@@ -10,7 +10,7 @@ import { useCurrency, type Currency as GlobalCurrency } from "@/contexts/Currenc
 import { useProduct } from "@/contexts/ProductContext"; 
 import { useQuery } from "@tanstack/react-query"; 
 import type { FetchedCountryProductInfo } from '@/app/api/countries/route';
-import type { SortOrder } from './Filters';
+import type { SortConfig } from './Filters';
 
 // New interface for enhanced data
 export interface EnhancedCountryProductInfo extends FetchedCountryProductInfo {
@@ -27,7 +27,8 @@ interface McIndexContentProps {
   timePeriodLabels: Record<number, string>;
   selectedTimePeriod: number;
   searchTerm?: string;
-  sortOrder?: SortOrder;
+  sortConfig?: SortConfig;
+  onSortChange?: (config: SortConfig) => void;
 }
 
 // Helper to fetch a single exchange rate
@@ -108,7 +109,8 @@ export default function McIndexContent({
   timePeriodLabels,
   selectedTimePeriod,
   searchTerm = "",
-  sortOrder,
+  sortConfig,
+  onSortChange,
 }: McIndexContentProps) {
   const [activeTab, setActiveTab] = useState("table");
   const { selectedCurrency } = useCurrency(); 
@@ -182,13 +184,12 @@ export default function McIndexContent({
           countryProductData={countryProductDataForView} 
           minGlobalPrice={minGlobalPriceForView}
           maxGlobalPrice={maxGlobalPriceForView}
-          timePeriodLabels={timePeriodLabels} 
-          selectedTimePeriod={selectedTimePeriod} 
           selectedGlobalCurrency={selectedCurrency} 
           monthForApi={monthForApi} 
           onCountrySelect={handleCountrySelect} 
           searchTerm={searchTerm}
-          sortOrder={sortOrder}
+          sortConfig={sortConfig}
+          onSortChange={onSortChange}
         />
       </TabsContent>
 
