@@ -294,8 +294,21 @@ export function StockTicker({ className, ...props }: StockTickerProps) {
         </div>
 
         {/* Pause indicator */}
-        <div className="text-xs text-muted-foreground whitespace-nowrap">
-          {isPaused ? "Paused" : "Live"}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap">
+          {/* Status dot with pulsing animation */}
+          <div className="relative">
+            <div
+              className={cn(
+                "w-2 h-2 rounded-full transition-colors duration-300",
+                isPaused ? "bg-orange-500" : "bg-green-500"
+              )}
+            />
+            {/* Pulsing ring effect for live state */}
+            {!isPaused && (
+              <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping opacity-75" />
+            )}
+          </div>
+          <span>{isPaused ? "Paused" : "Live"}</span>
         </div>
       </div>
     </div>

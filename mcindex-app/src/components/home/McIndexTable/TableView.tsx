@@ -100,8 +100,13 @@ const PriceTrendCell = (
             transform: 'translate(-50%, -100%) translateY(-8px)',
           }}
         >
-          <div className="bg-popover border text-popover-foreground shadow-lg rounded-md p-3 animate-in fade-in-0 zoom-in-95">
-            {tooltipContent}
+          <div className="relative bg-background/66 backdrop-blur-md border border-white/20 text-foreground shadow-2xl rounded-lg p-3 animate-in fade-in-0 zoom-in-95 overflow-hidden">
+            {/* Glossy overlay effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-lg pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            <div className="relative z-10">
+              {tooltipContent}
+            </div>
           </div>
         </div>
       )}

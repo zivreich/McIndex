@@ -144,21 +144,26 @@ export function RelativePriceBar({
             transform: 'translate(-50%, -100%) translateY(-8px)',
           }}
         >
-          <div className="bg-popover border text-popover-foreground shadow-lg rounded-md p-3 max-w-xs animate-in fade-in-0 zoom-in-95">
-            <div className="space-y-2">
-              <div>
-                <span className="font-semibold">{formattedValue} {currencyCode}</span>
-              </div>
-              <div className="text-xs space-y-1">
-                <div className="flex justify-between">
-                  <span>Relative position:</span>
-                  <span className="font-mono">{percentage.toFixed(1)}%</span>
+          <div className="relative bg-background/66 backdrop-blur-md border border-white/20 text-foreground shadow-2xl rounded-lg p-3 max-w-xs animate-in fade-in-0 zoom-in-95 overflow-hidden">
+            {/* Glossy overlay effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-lg pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            <div className="relative z-10">
+              <div className="space-y-2">
+                <div>
+                  <span className="font-semibold">{formattedValue} {currencyCode}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Range:</span>
-                  <span className="font-mono">
-                    {currencySymbol}{minPrice.toFixed(2)} - {currencySymbol}{maxPrice.toFixed(2)}
-                  </span>
+                <div className="text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span>Relative position:</span>
+                    <span className="font-mono">{percentage.toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Range:</span>
+                    <span className="font-mono">
+                      {currencySymbol}{minPrice.toFixed(2)} - {currencySymbol}{maxPrice.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
