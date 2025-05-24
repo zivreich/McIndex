@@ -211,6 +211,10 @@ export function StockTicker({ className, ...props }: StockTickerProps) {
           className="relative flex overflow-x-hidden" // This is the viewport
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          style={{
+            mask: 'linear-gradient(to right, transparent 0px, black 40px, black calc(100% - 40px), transparent 100%)',
+            WebkitMask: 'linear-gradient(to right, transparent 0px, black 40px, black calc(100% - 40px), transparent 100%)',
+          }}
         >
           {/* Single moving strip with duplicated content */}
           <div
@@ -280,17 +284,6 @@ export function StockTicker({ className, ...props }: StockTickerProps) {
               );
             })}
           </div>
-          {/* Gradient overlays for smooth fade effect */}
-          <div
-            className="absolute pointer-events-none left-0 top-0 h-full w-8
-                       bg-gradient-to-r from-bg-muted to-transparent
-                       z-20"
-          />
-          <div
-            className="absolute pointer-events-none right-0 top-0 h-full w-8
-                       bg-gradient-to-l from-background to-transparent
-                       z-20"
-          />
         </div>
 
         {/* Pause indicator */}
