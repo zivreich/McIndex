@@ -173,7 +173,7 @@ export function StockTicker({ className, ...props }: StockTickerProps) {
   }
 
   // Duplicate items for a smoother infinite scroll effect
-  const duplicatedItems = [...tickerItems, ...tickerItems];
+  const duplicatedItems = [...tickerItems, ...tickerItems, ...tickerItems];
 
   // Pause ticker on hover
   const handleMouseEnter = () => setIsPaused(true);
@@ -219,7 +219,7 @@ export function StockTicker({ className, ...props }: StockTickerProps) {
           {/* Single moving strip with duplicated content */}
           <div
             ref={tickerRef} // Ref assigned to the single moving strip
-            className="flex items-center gap-4 whitespace-nowrap animate-continuous-marquee" // New animation class
+            className="flex items-center whitespace-nowrap animate-continuous-marquee" // Removed gap to prevent spacing issues
             style={{
               animationPlayState: isPaused ? "paused" : "running",
               animationDuration: animationSpeed, // Apply dynamic speed
@@ -262,11 +262,11 @@ export function StockTicker({ className, ...props }: StockTickerProps) {
               return (
                 <div
                   key={index}
-                  className="flex items-center gap-0 ml-1 text-xs"
+                  className="flex items-center text-xs px-4" // Added consistent padding for spacing
                 >
-                  <span className="mr-1 text-sm">{item.emoji}</span>
+                  <span className="mr-1.5 text-sm">{item.emoji}</span>
                   <span className="font-bold mr-2">{item.countryCode}</span>
-                  <span className={cn("mr-0", trendColor)}>
+                  <span className={cn("mr-1", trendColor)}>
                     {item.currencySymbol}
                     {item.currentPrice !== null
                       ? item.currentPrice.toFixed(
@@ -274,7 +274,7 @@ export function StockTicker({ className, ...props }: StockTickerProps) {
                         )
                       : "N/A"}
                   </span>
-                  <TrendIcon className={cn("h-3 w-3", trendColor)} />
+                  <TrendIcon className={cn("h-3 w-3 mr-1", trendColor)} />
                   {percentageChange !== "N/A" && (
                     <span className={cn("text-[10px]", trendColor)}>
                       ({percentageChange})

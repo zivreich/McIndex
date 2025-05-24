@@ -7,15 +7,14 @@
   /* New animation for continuous seamless loop */
   @keyframes continuous-marquee {
     0% { transform: translateX(0%); }
-    /* Translates by the width of one set of items */
-    100% { transform: translateX(-50%); } 
+    /* Translates by the width of one set of items (now 1/3 since we have 3 copies) */
+    100% { transform: translateX(-33.333%); } 
   }
 
   .animate-continuous-marquee {
     /* 
-      The duration is set to 2s to match the implied speed of the original animations.
-      A single set of items will scroll past in 2s. 
-      You might want to increase this for a smoother, less hurried ticker effect (e.g., 20s or 30s).
+      The duration is set to 25s for smooth scrolling.
+      With triple duplication, the animation moves 1/3 of the total width.
     */
     animation: continuous-marquee 25s linear infinite;
   }
