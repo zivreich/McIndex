@@ -166,10 +166,10 @@ export function TableView({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[200px]">Country</TableHead>
-            <TableHead>Price ({selectedGlobalCurrency.code})</TableHead>
-            <TableHead>Price Trend</TableHead>
-            <TableHead className="text-left min-w-[240px]">Price Comparison</TableHead>
+            <TableHead className="w-[200px] px-6 py-4">Country</TableHead>
+            <TableHead className="px-6 py-4">Price ({selectedGlobalCurrency.code})</TableHead>
+            <TableHead className="px-6 py-4">Price Trend</TableHead>
+            <TableHead className="text-left min-w-[240px] px-6 py-4">Price Comparison</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -183,8 +183,8 @@ export function TableView({
 
             return (
               <TableRow key={item.id} onClick={() => onCountrySelect(item.countryCode)} className="cursor-pointer hover:bg-muted/50">
-                <TableCell>
-                  <div className="flex items-center gap-3">
+                <TableCell className="px-6 py-5">
+                  <div className="flex items-center gap-4">
                     {/* Sleek rounded flag display */}
                     <div className="relative w-8 h-6 bg-muted/30 rounded-sm border border-border/50 flex items-center justify-center overflow-hidden shadow-sm">
                       <img 
@@ -205,43 +205,47 @@ export function TableView({
                         }}
                       />
                       {/* Subtle glossy overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-md pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-sm pointer-events-none" />
                     </div>
-                    <span className="font-medium">{item.countryName}</span>
+                    <span className="font-medium text-base">{item.countryName}</span>
                   </div>
                 </TableCell>
-                <TableCell>
-                  {item.currentGlobalPrice !== null ? (
-                    <span>{selectedGlobalCurrency.symbol}{item.currentGlobalPrice.toFixed(2)}</span>
-                  ) : (
-                    <ConvertedPriceCell
-                      countryProductInfo={item.fullItemData} 
-                      targetGlobalCurrency={selectedGlobalCurrency} 
-                      month={monthForApi}       
-                      priceType="current"
-                    />
-                  )}
+                <TableCell className="px-6 py-5">
+                  <div className="font-medium text-base">
+                    {item.currentGlobalPrice !== null ? (
+                      <span>{selectedGlobalCurrency.symbol}{item.currentGlobalPrice.toFixed(2)}</span>
+                    ) : (
+                      <ConvertedPriceCell
+                        countryProductInfo={item.fullItemData} 
+                        targetGlobalCurrency={selectedGlobalCurrency} 
+                        month={monthForApi}       
+                        priceType="current"
+                      />
+                    )}
+                  </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-6 py-5">
                   <PriceTrendCell
                     currentPrice={currentLocalPriceForTrend} 
                     previousPrice={previousLocalPriceForTrend}
                     currencySymbol={item.fullItemData.currencyMeta.symbol}
                     tooltipContent={
-                      <div className="text-sm space-y-1">
-                        <div className="font-semibold mb-1">Price Change in Local Currency:</div>
-                        <div>
-                          Current: {formatLocalPrice(currentLocalPriceForTrend, item.fullItemData.currencyMeta)}
-                        </div>
-                        {item.fullItemData.pricesForProduct.previousAvailableYear && previousLocalPriceForTrend !== null && (
+                      <div className="text-sm space-y-2">
+                        <div className="font-semibold mb-2">Price Change in Local Currency:</div>
+                        <div className="space-y-1">
                           <div>
-                            Previous ({item.fullItemData.pricesForProduct.previousAvailableYear}): 
-                            {formatLocalPrice(previousLocalPriceForTrend, item.fullItemData.currencyMeta)}
+                            Current: {formatLocalPrice(currentLocalPriceForTrend, item.fullItemData.currencyMeta)}
                           </div>
-                        )}
+                          {item.fullItemData.pricesForProduct.previousAvailableYear && previousLocalPriceForTrend !== null && (
+                            <div>
+                              Previous ({item.fullItemData.pricesForProduct.previousAvailableYear}): 
+                              {formatLocalPrice(previousLocalPriceForTrend, item.fullItemData.currencyMeta)}
+                            </div>
+                          )}
+                        </div>
                         {trendPercentage !== null && (
                           <div className={cn(
-                            "mt-1",
+                            "mt-2 pt-2 border-t border-border/30",
                             trendPercentage > 0 ? "text-green-600 dark:text-green-400" : 
                             trendPercentage < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
                           )}>
@@ -252,7 +256,7 @@ export function TableView({
                     }
                   />
                 </TableCell>
-                <TableCell className="min-w-[240px] max-w-[320px]"> 
+                <TableCell className="min-w-[240px] max-w-[320px] px-6 py-5"> 
                   <RelativePriceBar 
                     value={item.currentGlobalPrice}
                     minPrice={minGlobalPrice}
