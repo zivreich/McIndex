@@ -10,20 +10,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
 
 interface FiltersProps {
   timePeriodLabels: Record<number, string>;
   selectedTimePeriod: number;
   onTimePeriodChange: (period: number) => void;
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
 }
 
 export default function Filters({
   timePeriodLabels,
   selectedTimePeriod,
   onTimePeriodChange,
+  searchTerm,
+  onSearchChange,
 }: FiltersProps) {
-  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div>
@@ -35,7 +37,7 @@ export default function Filters({
             placeholder="Search countries..."
             className="pl-8 font-mono"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
 

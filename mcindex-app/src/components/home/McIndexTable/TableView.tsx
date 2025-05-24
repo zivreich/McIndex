@@ -132,7 +132,8 @@ interface TableViewProps {
   selectedTimePeriod: number; 
   selectedGlobalCurrency: GlobalCurrency;     
   monthForApi: string;                        
-  onCountrySelect: (countryCode: string) => void; 
+  onCountrySelect: (countryCode: string) => void;
+  searchTerm?: string;
 }
 
 export function TableView({
@@ -143,7 +144,8 @@ export function TableView({
   selectedTimePeriod, 
   selectedGlobalCurrency,
   monthForApi,
-  onCountrySelect 
+  onCountrySelect,
+  searchTerm = ""
 }: TableViewProps) {
   const currentPeriodLabel = timePeriodLabels[selectedTimePeriod] || String(selectedTimePeriod);
 
@@ -157,7 +159,17 @@ export function TableView({
     currentGlobalPrice: item.currentGlobalPrice, 
   }));
 
-  const sortedDisplayData = [...mappedData].sort((a, b) =>
+  const filteredData = mappedData.filter((item) => {
+    if (!searchTerm.trim()) return true;
+    
+    const searchLower = searchTerm.toLowerCase().trim();
+    return (
+      item.countryName.toLowerCase().includes(searchLower) ||
+      item.countryCode.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const sortedDisplayData = [...filteredData].sort((a, b) =>
     a.countryName.localeCompare(b.countryName)
   );
 
@@ -173,101 +185,122 @@ export function TableView({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedDisplayData.map((item) => {
-            const currentLocalPriceForTrend = item.fullItemData.pricesForProduct.currentLocalPrice;
-            const previousLocalPriceForTrend = item.fullItemData.pricesForProduct.previousLocalPrice;
-            let trendPercentage: number | null = null;
-            if (currentLocalPriceForTrend !== null && previousLocalPriceForTrend !== null && previousLocalPriceForTrend !== 0) {
-              trendPercentage = ((currentLocalPriceForTrend - previousLocalPriceForTrend) / previousLocalPriceForTrend) * 100;
-            }
-
-            return (
-              <TableRow key={item.id} onClick={() => onCountrySelect(item.countryCode)} className="cursor-pointer hover:bg-muted/50">
-                <TableCell className="px-6 py-5">
-                  <div className="flex items-center gap-4">
-                    {/* Sleek rounded flag display */}
-                    <div className="relative w-8 h-6 bg-muted/30 rounded-sm border border-border/50 flex items-center justify-center overflow-hidden shadow-sm">
-                      <img 
-                        src={`https://flagcdn.com/w40/${item.countryCode.toLowerCase()}.png`}
-                        alt={`${item.countryName} flag`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          // Fallback to country code if flag image fails to load
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent && !parent.querySelector('.fallback-text')) {
-                            const fallback = document.createElement('span');
-                            fallback.className = 'fallback-text text-xs font-mono font-semibold text-muted-foreground';
-                            fallback.textContent = item.countryCode;
-                            parent.appendChild(fallback);
-                          }
-                        }}
-                      />
-                      {/* Subtle glossy overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-sm pointer-events-none" />
-                    </div>
-                    <span className="font-medium text-base">{item.countryName}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="px-6 py-5">
-                  <div className="font-medium text-base">
-                    {item.currentGlobalPrice !== null ? (
-                      <span>{selectedGlobalCurrency.symbol}{item.currentGlobalPrice.toFixed(2)}</span>
+          {sortedDisplayData.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={4} className="px-6 py-12 text-center">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <div className="text-muted-foreground text-sm">
+                    {searchTerm.trim() ? (
+                      <>No countries found matching "<strong>{searchTerm}</strong>"</>
                     ) : (
-                      <ConvertedPriceCell
-                        countryProductInfo={item.fullItemData} 
-                        targetGlobalCurrency={selectedGlobalCurrency} 
-                        month={monthForApi}       
-                        priceType="current"
-                      />
+                      'No data available'
                     )}
                   </div>
-                </TableCell>
-                <TableCell className="px-6 py-5">
-                  <PriceTrendCell
-                    currentPrice={currentLocalPriceForTrend} 
-                    previousPrice={previousLocalPriceForTrend}
-                    currencySymbol={item.fullItemData.currencyMeta.symbol}
-                    tooltipContent={
-                      <div className="text-sm space-y-2">
-                        <div className="font-semibold mb-2">Price Change in Local Currency:</div>
-                        <div className="space-y-1">
-                          <div>
-                            Current: {formatLocalPrice(currentLocalPriceForTrend, item.fullItemData.currencyMeta)}
-                          </div>
-                          {item.fullItemData.pricesForProduct.previousAvailableYear && previousLocalPriceForTrend !== null && (
+                  {searchTerm.trim() && (
+                    <div className="text-xs text-muted-foreground">
+                      Try searching by country name or code
+                    </div>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            sortedDisplayData.map((item) => {
+              const currentLocalPriceForTrend = item.fullItemData.pricesForProduct.currentLocalPrice;
+              const previousLocalPriceForTrend = item.fullItemData.pricesForProduct.previousLocalPrice;
+              let trendPercentage: number | null = null;
+              if (currentLocalPriceForTrend !== null && previousLocalPriceForTrend !== null && previousLocalPriceForTrend !== 0) {
+                trendPercentage = ((currentLocalPriceForTrend - previousLocalPriceForTrend) / previousLocalPriceForTrend) * 100;
+              }
+
+              return (
+                <TableRow key={item.id} onClick={() => onCountrySelect(item.countryCode)} className="cursor-pointer hover:bg-muted/50">
+                  <TableCell className="px-6 py-5">
+                    <div className="flex items-center gap-4">
+                      {/* Sleek rounded flag display */}
+                      <div className="relative w-8 h-6 bg-muted/30 rounded-sm border border-border/50 flex items-center justify-center overflow-hidden shadow-sm">
+                        <img 
+                          src={`https://flagcdn.com/w40/${item.countryCode.toLowerCase()}.png`}
+                          alt={`${item.countryName} flag`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback to country code if flag image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent && !parent.querySelector('.fallback-text')) {
+                              const fallback = document.createElement('span');
+                              fallback.className = 'fallback-text text-xs font-mono font-semibold text-muted-foreground';
+                              fallback.textContent = item.countryCode;
+                              parent.appendChild(fallback);
+                            }
+                          }}
+                        />
+                        {/* Subtle glossy overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-sm pointer-events-none" />
+                      </div>
+                      <span className="font-medium text-base">{item.countryName}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-5">
+                    <div className="font-medium text-base">
+                      {item.currentGlobalPrice !== null ? (
+                        <span>{selectedGlobalCurrency.symbol}{item.currentGlobalPrice.toFixed(2)}</span>
+                      ) : (
+                        <ConvertedPriceCell
+                          countryProductInfo={item.fullItemData} 
+                          targetGlobalCurrency={selectedGlobalCurrency} 
+                          month={monthForApi}       
+                          priceType="current"
+                        />
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-6 py-5">
+                    <PriceTrendCell
+                      currentPrice={currentLocalPriceForTrend} 
+                      previousPrice={previousLocalPriceForTrend}
+                      currencySymbol={item.fullItemData.currencyMeta.symbol}
+                      tooltipContent={
+                        <div className="text-sm space-y-2">
+                          <div className="font-semibold mb-2">Price Change in Local Currency:</div>
+                          <div className="space-y-1">
                             <div>
-                              Previous ({item.fullItemData.pricesForProduct.previousAvailableYear}): 
-                              {formatLocalPrice(previousLocalPriceForTrend, item.fullItemData.currencyMeta)}
+                              Current: {formatLocalPrice(currentLocalPriceForTrend, item.fullItemData.currencyMeta)}
+                            </div>
+                            {item.fullItemData.pricesForProduct.previousAvailableYear && previousLocalPriceForTrend !== null && (
+                              <div>
+                                Previous ({item.fullItemData.pricesForProduct.previousAvailableYear}): 
+                                {formatLocalPrice(previousLocalPriceForTrend, item.fullItemData.currencyMeta)}
+                              </div>
+                            )}
+                          </div>
+                          {trendPercentage !== null && (
+                            <div className={cn(
+                              "mt-2 pt-2 border-t border-border/30",
+                              trendPercentage > 0 ? "text-green-600 dark:text-green-400" : 
+                              trendPercentage < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
+                            )}>
+                              Change: {trendPercentage === Infinity || trendPercentage === -Infinity ? 'N/A' : `${trendPercentage.toFixed(1)}%`}
                             </div>
                           )}
                         </div>
-                        {trendPercentage !== null && (
-                          <div className={cn(
-                            "mt-2 pt-2 border-t border-border/30",
-                            trendPercentage > 0 ? "text-green-600 dark:text-green-400" : 
-                            trendPercentage < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
-                          )}>
-                            Change: {trendPercentage === Infinity || trendPercentage === -Infinity ? 'N/A' : `${trendPercentage.toFixed(1)}%`}
-                          </div>
-                        )}
-                      </div>
-                    }
-                  />
-                </TableCell>
-                <TableCell className="min-w-[240px] max-w-[320px] px-6 py-5"> 
-                  <RelativePriceBar 
-                    value={item.currentGlobalPrice}
-                    minPrice={minGlobalPrice}
-                    maxPrice={maxGlobalPrice}
-                    currencySymbol={selectedGlobalCurrency.symbol}
-                    currencyCode={selectedGlobalCurrency.code}
-                  />
-                </TableCell>
-              </TableRow>
-            );
-          })}
+                      }
+                    />
+                  </TableCell>
+                  <TableCell className="min-w-[240px] max-w-[320px] px-6 py-5"> 
+                    <RelativePriceBar 
+                      value={item.currentGlobalPrice}
+                      minPrice={minGlobalPrice}
+                      maxPrice={maxGlobalPrice}
+                      currencySymbol={selectedGlobalCurrency.symbol}
+                      currencyCode={selectedGlobalCurrency.code}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </TooltipProvider>

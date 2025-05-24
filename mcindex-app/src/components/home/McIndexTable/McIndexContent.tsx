@@ -25,6 +25,7 @@ interface ProcessedData {
 interface McIndexContentProps {
   timePeriodLabels: Record<number, string>;
   selectedTimePeriod: number;
+  searchTerm?: string;
 }
 
 // Helper to fetch a single exchange rate
@@ -104,6 +105,7 @@ const fetchAndProcessCountryData = async (
 export default function McIndexContent({
   timePeriodLabels,
   selectedTimePeriod,
+  searchTerm = "",
 }: McIndexContentProps) {
   const [activeTab, setActiveTab] = useState("table");
   const { selectedCurrency } = useCurrency(); 
@@ -182,6 +184,7 @@ export default function McIndexContent({
           selectedGlobalCurrency={selectedCurrency} 
           monthForApi={monthForApi} 
           onCountrySelect={handleCountrySelect} 
+          searchTerm={searchTerm}
         />
       </TabsContent>
 

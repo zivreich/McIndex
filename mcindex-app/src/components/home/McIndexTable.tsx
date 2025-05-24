@@ -14,6 +14,8 @@ export const timePeriodLabels: Record<number, string> = {
 export default function McIndexTable() {
     // State lifted from Filters.tsx
     const [selectedTimePeriod, setSelectedTimePeriod] = useState<number>(2025);
+    // Search state for filtering
+    const [searchTerm, setSearchTerm] = useState<string>("");
 
     return (
         <div>
@@ -21,10 +23,13 @@ export default function McIndexTable() {
                 timePeriodLabels={timePeriodLabels}
                 selectedTimePeriod={selectedTimePeriod}
                 onTimePeriodChange={setSelectedTimePeriod}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
             />
             <McIndexContent
                 timePeriodLabels={timePeriodLabels}
                 selectedTimePeriod={selectedTimePeriod}
+                searchTerm={searchTerm}
             />    
         </div>
     )
