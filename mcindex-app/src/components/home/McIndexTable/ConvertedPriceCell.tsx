@@ -14,8 +14,7 @@ interface ExchangeRateApiResponse {
 export interface ConvertedPriceCellProps {
   countryProductInfo: FetchedCountryProductInfo;
   targetGlobalCurrency: GlobalCurrency;
-  year: number; // This should be the 'requestedYear' for the price
-  month: string; // Renamed from monthForApi for clarity within this component
+  month: string; 
   priceType?: 'current' | 'previous'; // Default to 'current'
 }
 
@@ -34,8 +33,7 @@ const fetchExchangeRate = async (year: number, month: string, currencyCode: stri
 export function ConvertedPriceCell({
   countryProductInfo,
   targetGlobalCurrency,
-  year,      // This 'year' prop is the selected year for context, might differ from price's year
-  month,     // Renamed from monthForApi
+  month,     
   priceType = 'current',
 }: ConvertedPriceCellProps) {
   const localCurrencyMeta = countryProductInfo.currencyMeta;

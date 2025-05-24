@@ -63,6 +63,7 @@ export interface FetchedCountryProductInfo {
     currentLocalPrice: number | null;
     previousAvailableYear: number | null;
     previousLocalPrice: number | null;
+    historicalPrices: Array<{ date: string; price: number }>; // Added for line chart
   };
 }
 
@@ -116,6 +117,7 @@ export async function GET(request: NextRequest) {
               currentLocalPrice: null,
               previousAvailableYear: null,
               previousLocalPrice: null,
+              historicalPrices: [],
             },
           };
         }
@@ -131,9 +133,20 @@ export async function GET(request: NextRequest) {
       let currentLocalPrice: number | null = null;
       let previousLocalPrice: number | null = null;
       let previousAvailableYear: number | null = null;
+      const historicalPrices: Array<{ date: string; price: number }> = []; // Initialize historical prices
 
       if (productPrices) {
         currentLocalPrice = productPrices[String(requestedYear)] ?? null;
+
+        // Populate historical prices
+        Object.keys(productPrices).forEach(yearStr => {
+          const yearNum = parseInt(yearStr, 10);
+          if (!isNaN(yearNum) && productPrices[yearStr] !== null && productPrices[yearStr] !== undefined) {
+            historicalPrices.push({ date: yearStr, price: productPrices[yearStr] });
+          }
+        });
+        // Sort historical prices by year ascending for the chart
+        historicalPrices.sort((a, b) => parseInt(a.date, 10) - parseInt(b.date, 10));
 
         const availableYears = Object.keys(productPrices)
           .map(y => parseInt(y, 10))
@@ -158,6 +171,7 @@ export async function GET(request: NextRequest) {
           currentLocalPrice,
           previousAvailableYear,
           previousLocalPrice,
+          historicalPrices, // Added historical prices to response
         },
       };
     }).filter(Boolean) as FetchedCountryProductInfo[];

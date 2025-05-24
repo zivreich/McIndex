@@ -1,7 +1,6 @@
 "use client";
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query'; 
+import React, { useState, useRef } from 'react';
 import {
   Table,
   TableBody,
@@ -13,31 +12,59 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from 'lucide-react'; 
+import { cn } from "@/lib/utils";
+import { RelativePriceBar } from './RelativePriceBar'; 
 
-// Import the type for fetched data from the API route
 import type { FetchedCountryProductInfo } from '@/app/api/countries/route'; 
+import type { EnhancedCountryProductInfo } from './McIndexContent'; 
 import type { Currency as GlobalCurrency } from '@/contexts/CurrencyContext'; 
 import { ConvertedPriceCell } from './ConvertedPriceCell'; 
 
-// Helper to format price based on local currency data (kept for PriceTrendCell etc. for now)
 const formatLocalPrice = (price: number | null | undefined, currencyMeta: FetchedCountryProductInfo['currencyMeta']): string => {
   if (price === null || typeof price === 'undefined') return "N/A";
   return `${currencyMeta.symbol}${price.toFixed(currencyMeta.decimals ? 2 : 0)}`;
 };
 
-// PriceTrendCell remains unchanged for now, uses local currency
 const PriceTrendCell = (
-  { currentPrice, previousPrice, currencySymbol }:
-  { currentPrice: number | null; previousPrice: number | null; currencySymbol: string }
+  { currentPrice, previousPrice, currencySymbol, tooltipContent }:
+  { 
+    currentPrice: number | null; 
+    previousPrice: number | null; 
+    currencySymbol: string;
+    tooltipContent: React.ReactNode;
+  }
 ) => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (event: React.MouseEvent) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setMousePosition({
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
+    }
+  };
+
+  const handleMouseEnter = (event: React.MouseEvent) => {
+    setIsHovered(true);
+    handleMouseMove(event);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
   if (currentPrice === null || previousPrice === null) {
     return <MinusIcon className="h-4 w-4 text-muted-foreground" />;
   }
+
   const trend = currentPrice - previousPrice;
-  // Avoid division by zero if previousPrice is 0
   const percentageChange = previousPrice !== 0 ? ((trend / previousPrice) * 100) : (trend !== 0 ? Infinity : 0);
 
-  let IconComponent = MinusIcon; // Default to MinusIcon
+  let IconComponent = MinusIcon; 
   let textColor = "text-muted-foreground";
 
   if (trend > 0) {
@@ -47,30 +74,37 @@ const PriceTrendCell = (
     IconComponent = ArrowDownIcon;
     textColor = "text-red-600";
   }
-  // If trend is 0, IconComponent remains MinusIcon and textColor remains text-muted-foreground
 
   return (
-    <div className={`flex items-center gap-1 ${textColor}`}>
-      <IconComponent className="h-4 w-4" />
-      <span>
-        {currencySymbol}{Math.abs(trend).toFixed(2)} ({percentageChange === Infinity || percentageChange === -Infinity ? 'N/A' : percentageChange.toFixed(1)}%)
-      </span>
-    </div>
-  );
-};
+    <div className="relative">
+      <div 
+        ref={containerRef}
+        className={`flex items-center gap-1 ${textColor} cursor-pointer`}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <IconComponent className="h-4 w-4" />
+        <span>
+          {currencySymbol}{Math.abs(trend).toFixed(2)} ({percentageChange === Infinity || percentageChange === -Infinity ? 'N/A' : percentageChange.toFixed(1)}%)
+        </span>
+      </div>
 
-// InlineChartCell remains unchanged for now, uses local currency
-const InlineChartCell = (
-  { countryProductInfo, timePeriodLabel, currencySymbol }:
-  {
-    countryProductInfo: FetchedCountryProductInfo;
-    timePeriodLabel: string;
-    currencySymbol: string;
-  }
-) => {
-  return (
-    <div className="w-full h-10 bg-gray-200 rounded-sm flex items-center justify-center text-xs text-gray-500">
-      [Chart: {countryProductInfo.countryName} {currencySymbol} vs {timePeriodLabel}]
+      {/* Custom floating tooltip that follows the mouse */}
+      {isHovered && (
+        <div
+          className="fixed z-50 pointer-events-none"
+          style={{
+            left: `${mousePosition.x + (containerRef.current?.getBoundingClientRect().left || 0)}px`,
+            top: `${mousePosition.y + (containerRef.current?.getBoundingClientRect().top || 0)}px`,
+            transform: 'translate(-50%, -100%) translateY(-8px)',
+          }}
+        >
+          <div className="bg-popover border text-popover-foreground shadow-lg rounded-md p-3 animate-in fade-in-0 zoom-in-95">
+            {tooltipContent}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -80,12 +114,15 @@ interface TableDisplayItem {
   countryName: string;
   countryCode: string;
   flag: string;
-  trendValue: number; // Calculated for sorting/displaying trend icon
-  fullItemData: FetchedCountryProductInfo; // Pass complete item for complex cells
+  trendValue: number; 
+  fullItemData: EnhancedCountryProductInfo; 
+  currentGlobalPrice: number | null; 
 }
 
 interface TableViewProps {
-  countryProductData: FetchedCountryProductInfo[]; 
+  countryProductData: EnhancedCountryProductInfo[]; 
+  minGlobalPrice: number; 
+  maxGlobalPrice: number; 
   timePeriodLabels: Record<number, string>;
   selectedTimePeriod: number; 
   selectedGlobalCurrency: GlobalCurrency;     
@@ -95,6 +132,8 @@ interface TableViewProps {
 
 export function TableView({
   countryProductData,
+  minGlobalPrice, 
+  maxGlobalPrice, 
   timePeriodLabels, 
   selectedTimePeriod, 
   selectedGlobalCurrency,
@@ -103,14 +142,14 @@ export function TableView({
 }: TableViewProps) {
   const currentPeriodLabel = timePeriodLabels[selectedTimePeriod] || String(selectedTimePeriod);
 
-  // Transform FetchedCountryProductInfo to TableDisplayItem
-  const mappedData: TableDisplayItem[] = countryProductData.map((item: FetchedCountryProductInfo) => ({
+  const mappedData: TableDisplayItem[] = countryProductData.map((item: EnhancedCountryProductInfo) => ({
     id: item.id,
     countryName: item.countryName,
     countryCode: item.countryCode,
     flag: item.flag,
     trendValue: (item.pricesForProduct.currentLocalPrice ?? 0) - (item.pricesForProduct.previousLocalPrice ?? 0),
     fullItemData: item,
+    currentGlobalPrice: item.currentGlobalPrice, 
   }));
 
   const sortedDisplayData = [...mappedData].sort((a, b) =>
@@ -125,16 +164,16 @@ export function TableView({
             <TableHead className="w-[200px]">Country</TableHead>
             <TableHead>Price ({selectedGlobalCurrency.code})</TableHead>
             <TableHead>Price Trend</TableHead>
-            <TableHead className="text-left min-w-[200px]">Price Chart</TableHead>
+            <TableHead className="text-left min-w-[240px]">Price Comparison</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedDisplayData.map((item) => {
-            const currentPrice = item.fullItemData.pricesForProduct.currentLocalPrice;
-            const previousPrice = item.fullItemData.pricesForProduct.previousLocalPrice;
+            const currentLocalPriceForTrend = item.fullItemData.pricesForProduct.currentLocalPrice;
+            const previousLocalPriceForTrend = item.fullItemData.pricesForProduct.previousLocalPrice;
             let trendPercentage: number | null = null;
-            if (currentPrice !== null && previousPrice !== null && previousPrice !== 0) {
-              trendPercentage = ((currentPrice - previousPrice) / previousPrice) * 100;
+            if (currentLocalPriceForTrend !== null && previousLocalPriceForTrend !== null && previousLocalPriceForTrend !== 0) {
+              trendPercentage = ((currentLocalPriceForTrend - previousLocalPriceForTrend) / previousLocalPriceForTrend) * 100;
             }
 
             return (
@@ -148,48 +187,54 @@ export function TableView({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <ConvertedPriceCell
-                    countryProductInfo={item.fullItemData} // Pass the full original item
-                    targetGlobalCurrency={selectedGlobalCurrency} // Corrected prop name
-                    year={selectedTimePeriod} // This is the main year context
-                    month={monthForApi}       // Month context for API calls
-                    priceType="current" // Explicitly ask for current price
-                  />
+                  {item.currentGlobalPrice !== null ? (
+                    <span>{selectedGlobalCurrency.symbol}{item.currentGlobalPrice.toFixed(2)}</span>
+                  ) : (
+                    <ConvertedPriceCell
+                      countryProductInfo={item.fullItemData} 
+                      targetGlobalCurrency={selectedGlobalCurrency} 
+                      month={monthForApi}       
+                      priceType="current"
+                    />
+                  )}
                 </TableCell>
                 <TableCell>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div> 
-                        <PriceTrendCell
-                          currentPrice={currentPrice}
-                          previousPrice={previousPrice}
-                          currencySymbol={item.fullItemData.currencyMeta.symbol} 
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-background border text-foreground">
-                      <div className="text-sm">
-                        <div>Current ({currentPeriodLabel}): {formatLocalPrice(currentPrice, item.fullItemData.currencyMeta)}</div>
-                        {item.fullItemData.pricesForProduct.previousAvailableYear && (
+                  <PriceTrendCell
+                    currentPrice={currentLocalPriceForTrend} 
+                    previousPrice={previousLocalPriceForTrend}
+                    currencySymbol={item.fullItemData.currencyMeta.symbol}
+                    tooltipContent={
+                      <div className="text-sm space-y-1">
+                        <div className="font-semibold mb-1">Price Change in Local Currency:</div>
+                        <div>
+                          Current: {formatLocalPrice(currentLocalPriceForTrend, item.fullItemData.currencyMeta)}
+                        </div>
+                        {item.fullItemData.pricesForProduct.previousAvailableYear && previousLocalPriceForTrend !== null && (
                           <div>
                             Previous ({item.fullItemData.pricesForProduct.previousAvailableYear}): 
-                            {formatLocalPrice(previousPrice, item.fullItemData.currencyMeta)}
+                            {formatLocalPrice(previousLocalPriceForTrend, item.fullItemData.currencyMeta)}
                           </div>
                         )}
                         {trendPercentage !== null && (
-                           <div className="mt-1">
-                            Change: {trendPercentage === Infinity || trendPercentage === -Infinity ? 'N/A' : trendPercentage.toFixed(1)}%
+                          <div className={cn(
+                            "mt-1",
+                            trendPercentage > 0 ? "text-green-600 dark:text-green-400" : 
+                            trendPercentage < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
+                          )}>
+                            Change: {trendPercentage === Infinity || trendPercentage === -Infinity ? 'N/A' : `${trendPercentage.toFixed(1)}%`}
                           </div>
                         )}
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
+                    }
+                  />
                 </TableCell>
-                <TableCell className="min-w-[200px]">
-                  <InlineChartCell
-                    countryProductInfo={item.fullItemData} 
-                    timePeriodLabel={currentPeriodLabel}
-                    currencySymbol={item.fullItemData.currencyMeta.symbol} 
+                <TableCell className="min-w-[240px] max-w-[320px]"> 
+                  <RelativePriceBar 
+                    value={item.currentGlobalPrice}
+                    minPrice={minGlobalPrice}
+                    maxPrice={maxGlobalPrice}
+                    currencySymbol={selectedGlobalCurrency.symbol}
+                    currencyCode={selectedGlobalCurrency.code}
                   />
                 </TableCell>
               </TableRow>
