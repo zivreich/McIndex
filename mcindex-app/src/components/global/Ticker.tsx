@@ -212,8 +212,8 @@ export function StockTicker({ className, ...props }: StockTickerProps) {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           style={{
-            mask: 'linear-gradient(to right, transparent 0px, black 40px, black calc(100% - 40px), transparent 100%)',
-            WebkitMask: 'linear-gradient(to right, transparent 0px, black 40px, black calc(100% - 40px), transparent 100%)',
+            mask: 'linear-gradient(to right, transparent 0px, black 30px, black calc(100% - 30px), transparent 100%)',
+            WebkitMask: 'linear-gradient(to right, transparent 0px, black 30px, black calc(100% - 30px), transparent 100%)',
           }}
         >
           {/* Single moving strip with duplicated content */}
