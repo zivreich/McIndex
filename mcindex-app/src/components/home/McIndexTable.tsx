@@ -1,4 +1,4 @@
-import Filters from "@/components/home/McIndexTable/Filters";
+import Filters, { type SortOrder } from "@/components/home/McIndexTable/Filters";
 import McIndexContent from "@/components/home/McIndexTable/McIndexContent";
 import { useState } from "react";
 
@@ -16,6 +16,8 @@ export default function McIndexTable() {
     const [selectedTimePeriod, setSelectedTimePeriod] = useState<number>(2025);
     // Search state for filtering
     const [searchTerm, setSearchTerm] = useState<string>("");
+    // Sort state for price sorting
+    const [sortOrder, setSortOrder] = useState<SortOrder>('none');
 
     return (
         <div>
@@ -25,11 +27,14 @@ export default function McIndexTable() {
                 onTimePeriodChange={setSelectedTimePeriod}
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
+                sortOrder={sortOrder}
+                onSortChange={setSortOrder}
             />
             <McIndexContent
                 timePeriodLabels={timePeriodLabels}
                 selectedTimePeriod={selectedTimePeriod}
                 searchTerm={searchTerm}
+                sortOrder={sortOrder}
             />    
         </div>
     )

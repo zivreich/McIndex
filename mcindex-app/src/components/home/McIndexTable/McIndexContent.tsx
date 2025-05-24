@@ -10,6 +10,7 @@ import { useCurrency, type Currency as GlobalCurrency } from "@/contexts/Currenc
 import { useProduct } from "@/contexts/ProductContext"; 
 import { useQuery } from "@tanstack/react-query"; 
 import type { FetchedCountryProductInfo } from '@/app/api/countries/route';
+import type { SortOrder } from './Filters';
 
 // New interface for enhanced data
 export interface EnhancedCountryProductInfo extends FetchedCountryProductInfo {
@@ -26,6 +27,7 @@ interface McIndexContentProps {
   timePeriodLabels: Record<number, string>;
   selectedTimePeriod: number;
   searchTerm?: string;
+  sortOrder?: SortOrder;
 }
 
 // Helper to fetch a single exchange rate
@@ -106,6 +108,7 @@ export default function McIndexContent({
   timePeriodLabels,
   selectedTimePeriod,
   searchTerm = "",
+  sortOrder,
 }: McIndexContentProps) {
   const [activeTab, setActiveTab] = useState("table");
   const { selectedCurrency } = useCurrency(); 
@@ -185,6 +188,7 @@ export default function McIndexContent({
           monthForApi={monthForApi} 
           onCountrySelect={handleCountrySelect} 
           searchTerm={searchTerm}
+          sortOrder={sortOrder}
         />
       </TabsContent>
 

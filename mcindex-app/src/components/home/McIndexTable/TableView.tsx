@@ -18,6 +18,7 @@ import { RelativePriceBar } from './RelativePriceBar';
 import type { FetchedCountryProductInfo } from '@/app/api/countries/route'; 
 import type { EnhancedCountryProductInfo } from './McIndexContent'; 
 import type { Currency as GlobalCurrency } from '@/contexts/CurrencyContext'; 
+import type { SortOrder } from './Filters';
 import { ConvertedPriceCell } from './ConvertedPriceCell'; 
 
 const formatLocalPrice = (price: number | null | undefined, currencyMeta: FetchedCountryProductInfo['currencyMeta']): string => {
@@ -134,6 +135,7 @@ interface TableViewProps {
   monthForApi: string;                        
   onCountrySelect: (countryCode: string) => void;
   searchTerm?: string;
+  sortOrder?: SortOrder;
 }
 
 export function TableView({
@@ -145,7 +147,8 @@ export function TableView({
   selectedGlobalCurrency,
   monthForApi,
   onCountrySelect,
-  searchTerm = ""
+  searchTerm = "",
+  sortOrder = 'none'
 }: TableViewProps) {
   const currentPeriodLabel = timePeriodLabels[selectedTimePeriod] || String(selectedTimePeriod);
 
@@ -169,9 +172,32 @@ export function TableView({
     );
   });
 
-  const sortedDisplayData = [...filteredData].sort((a, b) =>
-    a.countryName.localeCompare(b.countryName)
-  );
+  const sortedDisplayData = [...filteredData].sort((a, b) => {
+    // Always sort by country name first if sortOrder is 'none'
+    if (sortOrder === 'none') {
+      return a.countryName.localeCompare(b.countryName);
+    }
+    
+    // Sort by price
+    const priceA = a.currentGlobalPrice ?? 0;
+    const priceB = b.currentGlobalPrice ?? 0;
+    
+    // Handle null values - put items with no price at the end
+    if (a.currentGlobalPrice === null && b.currentGlobalPrice === null) {
+      return a.countryName.localeCompare(b.countryName);
+    }
+    if (a.currentGlobalPrice === null) return 1;
+    if (b.currentGlobalPrice === null) return -1;
+    
+    // Sort by price
+    if (sortOrder === 'asc') {
+      return priceA - priceB;
+    } else if (sortOrder === 'desc') {
+      return priceB - priceA;
+    }
+    
+    return a.countryName.localeCompare(b.countryName);
+  });
 
   return (
     <TooltipProvider>
