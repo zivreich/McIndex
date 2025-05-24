@@ -185,9 +185,28 @@ export function TableView({
               <TableRow key={item.id} onClick={() => onCountrySelect(item.countryCode)} className="cursor-pointer hover:bg-muted/50">
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback>{item.flag || item.countryCode}</AvatarFallback>
-                    </Avatar>
+                    {/* Sleek rounded flag display */}
+                    <div className="relative w-8 h-6 bg-muted/30 rounded-sm border border-border/50 flex items-center justify-center overflow-hidden shadow-sm">
+                      <img 
+                        src={`https://flagcdn.com/w40/${item.countryCode.toLowerCase()}.png`}
+                        alt={`${item.countryName} flag`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to country code if flag image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent && !parent.querySelector('.fallback-text')) {
+                            const fallback = document.createElement('span');
+                            fallback.className = 'fallback-text text-xs font-mono font-semibold text-muted-foreground';
+                            fallback.textContent = item.countryCode;
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
+                      {/* Subtle glossy overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-md pointer-events-none" />
+                    </div>
                     <span className="font-medium">{item.countryName}</span>
                   </div>
                 </TableCell>
